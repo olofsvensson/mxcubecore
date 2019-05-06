@@ -11,11 +11,11 @@
           <setCmd>MOVE.start</setCmd>
 	  <stopCmd>MOVE.stop</stopCmd>
           <index>0</index>
-          <velocity>20</velocity>
+          <velocity>10</velocity>
           <updateTolerance>0.05</updateTolerance>
 	  <evalTolerance>10.0</evalTolerance>
           <statusModes>{'Move': 1, 'Ready': 0}</statusModes>
-          <focusingModes>{'Collimated':-77.200, 'Double': -62.615, 'Imaging': 181.2250}</focusingModes>
+          <focusingModes>{'Collimated':-77.700, 'Double': -63.615, 'Imaging': 181.2250}</focusingModes>
         </motor>
         <motor>
           <motorName>P14DetHor2</motorName>
@@ -23,7 +23,7 @@
           <setCmd>MOVE.start</setCmd>
 	  <stopCmd>MOVE.stop</stopCmd>
           <index>1</index>
-          <velocity>20</velocity>
+          <velocity>10</velocity>
           <updateTolerance>0.05</updateTolerance>
 	  <evalTolerance>10.0</evalTolerance>
           <statusModes>{'Move': 1, 'Ready': 0}</statusModes>

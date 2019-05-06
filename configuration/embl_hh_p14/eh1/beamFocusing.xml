@@ -29,7 +29,6 @@
         </focusMode>
     </focusModes>
     <focusMotors>['ExTblVUp', 'ExTblHUp', 'ExTblHDwn', 'ExTblVerDwnI', 'ExTblVerDwnO', 'VFM_VerTrans', 'HFM_HorTrans', 'P14DetHor1', 'P14DetHor2', 'P14DetVer', 'P14DetTilt', 'ShutterTrans']</focusMotors>
-
     <!--focusMotors>['ExTblVUp', 'ExTblHUp', 'ExTblHDwn', 'ExTblVerDwnI', 'ExTblVerDwnO', 'VFM_VerTrans', 'HFM_HorTrans']</focusMotors-->
     <object hwrid="/eh1/beamFocusingMotors/P14ExpTbl" role="P14ExpTbl"/>
     <object hwrid="/eh1/beamFocusingMotors/P14KB" role="P14KB"/>

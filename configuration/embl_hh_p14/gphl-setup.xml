@@ -4,7 +4,7 @@
     - file names below are set as file_name.format(directory_locations) -->
     <directory_locations>
         <!-- Wrapper scripts for GPhL programs - must be reachable from workflow and procesing -->
-        <GPHL_SETUP>/data/users/p3l-gleb1/gphl</GPHL_SETUP>
+        <GPHL_SETUP>/data/users/p3l-gleb1/gphl/</GPHL_SETUP>
         <GPHL_RELEASE>/data/users/p3l-gleb1/gphl/GPhL-EMBLHH-20190430/latest/</GPHL_RELEASE>
         <!--<GPHL_SETUP>/mnt/scratch/rhfogh/mxcube_setup/</GPHL_SETUP>-->
         <!--<GPHL_RELEASE>/mnt/scratch/rhfogh/gphl_release/latest</GPHL_RELEASE>-->
@@ -15,7 +15,8 @@
     <!-- ConfigFile is the ssh configuratino file, passed to ssh with the -F option -->
     <ssh_options>
         <Host>p14dd01</Host>
-        <IdentityFile>????????</IdentityFile>
+        <!-- NBNB check if IdentityFile is correct -->
+        <IdentityFile>/home/p3l-gleb1/.ssh/id_rsa.pub</IdentityFile>
         <User>p3l-gleb1</User>
         <StrictHostKeyChecking>no</StrictHostKeyChecking>
         <!--<ConfigFile>/path/to/ssh/config/file</ConfigFile>-->
@@ -26,7 +27,7 @@
 
     <software_paths>
         <!-- Location of Java binary to execute for workflow application -->
-        <java_binary>java</java_binary>
+        <java_binary>/usr/bin/java</java_binary>
         <!-- Debug mode:  -->
         <!--<java_binary>ssh -i /home/rhfogh/.ssh/wf_test_id -o StrictHostKeyChecking=no lonsdale java</java_binary>-->
 

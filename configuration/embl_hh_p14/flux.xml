@@ -10,6 +10,7 @@
    <object href="/attenuators" role="transmission" />
    <object href="/session" role="session" />
    <object href="/safshut" role="safety_shutter"/>
+   <object href="/eh1/beamFocusing" role="beam_focusing"/>
    
    <channel type="tine" name="intensMean" tinename="/P14/BCUIntensity/Device0" timeout="100">ChannelsMean.get</channel>
    <channel type="tine" name="intensRange" tinename="/P14/BCUIntensity/Device0">CurrentRange.set</channel>

@@ -35,7 +35,9 @@
   <object href="/session" role="session"/>
   <object href="/xrf-spectrum" role="xrf_spectrum"/>
   <object href="/xray-imaging" role="xray_imaging"/>
-  
+
+  <object href="/gphl-workflow" role="gphl_workflow"/>
+  <object href="/gphl-setup" role="gphl_connection"/>  
 
   <!-- advanced methods are defined as a list with method names.
        Each name is then converted to class name.

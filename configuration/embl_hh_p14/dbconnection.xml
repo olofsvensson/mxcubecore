@@ -1,5 +1,8 @@
 <object class="ISPyBClient">
+  <ws_root>http://ispyb.embl-hamburg.de:8080/ispyb/ispyb-ws/ispybWS/</ws_root>
   <object role="session" href="/session"/>
+  <ws_username>****</ws_username>
+  <ws_password>****</ws_password>
   <loginType>user</loginType>
   <authServerType>ispyb</authServerType>
 </object>
