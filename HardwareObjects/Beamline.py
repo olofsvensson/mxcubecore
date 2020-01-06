@@ -48,7 +48,7 @@ class Beamline(ConfiguredObject):
     # NB the double underscore is deliberate - attribute must be hidden from subclasses
     __content_roles = []
 
-    # Names of procedures under Beamline - set of sttrings.
+    # Names of procedures under Beamline - set of strings.
     # NB subclasses must add additional parocedures to this set,
     # and may NOT override _procedure_names
     _procedure_names = set()

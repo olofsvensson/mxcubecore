@@ -51,49 +51,49 @@ class ProcedureState(IntEnum):
 class AbstractProcedure(ConfiguredObject):
     __content_roles = []
 
-    _ARGS_CLASS = ()
-    _KWARGS_CLASS = {}
-    _RESULT_CLASS = ()
+    _ARGS_CLASSES = ()
+    _KWARGS_CLASSES = {}
+    _RESULT_CLASSES = ()
 
     @staticmethod
-    def set_args_class(args_class, kwargs_class):
+    def set_args_classes(args_classes, kwargs_classes):
         """
         Sets the types of the data models used as arguments, cane be used to
         set the argument classes runtime if the models are built dynamically,
         i.e based on configuration not known before
 
         Args:
-            args_class (tuple[BaseModel]) tuple of classes for args
-            kwargs_class (dict[[str]: [BaseModel]]) dictionary containing BaseModels
+            args_classes (tuple[BaseModel]) tuple of classes for args
+            kwargs_classes (dict[[str]: [BaseModel]]) dictionary containing BaseModels
         """
-        AbstractProcedure._ARGS_CLASS = args_class
-        AbstractProcedure._KWARGS_CLASS = kwargs_class
+        AbstractProcedure._ARGS_CLASSES = args_classes
+        AbstractProcedure._KWARGS_CLASSES = kwargs_classes
 
     @staticmethod
-    def set_result_class(_result_class):
+    def set_result_classes(result_classes):
         """
         Sets the types of the data models returned by the Procedure, can
         be used to set the result model runtime of the data model is built
         dynamically, i.e based on configuration not known before
 
-        Returns:
-            (tuple[BaseModel]) tuple of classes for args
+        Args:
+            result_classes (tuple[BaseModel]) tuple of classes for results
         """
-        AbstractProcedure._RESULT_CLASS = _result_class
+        AbstractProcedure._RESULT_CLASSES = result_classes
 
     def __init__(self, name):
         super(AbstractProcedure, self).__init__(name)
-        self._msg=None
-        self._results=None
+        self._msg = None
+        self._results = None
         self._ready_event = gevent.event.Event()
-        self._task=None
+        self._task = None
         self._state = ProcedureState.READY
 
         # YML configuration options
         # Category that the Procedure belongs to, configurable through
         # YAML file and used by for listing and displaying the procedure
         # in the right context.
-        self.category=""
+        self.category = ""
 
     def _init(self):
         pass
@@ -211,8 +211,8 @@ class AbstractProcedure(ConfiguredObject):
             dict{"args": tuple[JSONSchema], "kwargs": key: [JSONSchema]}
         """
         return {
-            "args": tuple([s.schema_json() for s in self._ARGS_CLASS]),
-            "kwargs": {key:value.schema_json() for (key, value) in self._KWARGS_CLASS.items()}
+            "args": tuple([s.schema_json() for s in self._ARGS_CLASSES]),
+            "kwargs": {key:value.schema_json() for (key, value) in self._KWARGS_CLASSES.items()}
         }
 
     @property
@@ -222,7 +222,7 @@ class AbstractProcedure(ConfiguredObject):
         Returns:
             tuple[JSONSchema]
         """
-        return (s.schema_json() for s in self._RESULT_CLASS)
+        return (s.schema_json() for s in self._RESULT_CLASSES)
 
     @property
     def msg(self):
