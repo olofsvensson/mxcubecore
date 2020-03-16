@@ -124,7 +124,7 @@ class AbstractMultiCollect(object):
         pass
 
     @abc.abstractmethod
-    def do_oscillation(self, start, end, exptime, shutterless, npass):
+    def do_oscillation(self, start, end, exptime, shutterless, npass, first_frame):
         pass
 
     @abc.abstractmethod
@@ -813,6 +813,7 @@ class AbstractMultiCollect(object):
                             str(file_path),
                             str(jpeg_full_path),
                             str(jpeg_thumbnail_full_path),
+                            wait=False
                         )
 
                         osc_start, osc_end = self.prepare_oscillation(
@@ -838,6 +839,7 @@ class AbstractMultiCollect(object):
                                 wedge_size,
                                 data_collect_parameters.get("shutterless", True),
                                 npass,
+                                j == wedge_size
                             )
 
                             # self.stop_acquisition()
@@ -900,8 +902,6 @@ class AbstractMultiCollect(object):
                                     "Timeout waiting for detector trigger, no image taken"
                                 ),
                             ):
-                                print("HERE")
-                                print(self.last_image_saved())
                                 while self.last_image_saved() == 0:
                                     time.sleep(exptime)
 
