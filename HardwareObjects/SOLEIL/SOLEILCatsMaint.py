@@ -41,13 +41,13 @@ class SOLEILCatsMaint(Equipment):
     def init(self):
         logging.info("CatsMaint: init")
 
-        tool = self.getProperty("tool")
+        tool = self.get_property("tool")
         if tool in TOOLS:
             self.tool = TOOLS[tool]
         else:
             self.tool = self.default_tool
 
-        soaklid = self.getProperty("soak_lid")
+        soaklid = self.get_property("soak_lid")
         if soaklid is not None:
             self.soaklid = soaklid
         else:
@@ -102,74 +102,74 @@ class SOLEILCatsMaint(Equipment):
         """
         Moves a sample from the gripper back into the dewar to its logged position.
         """
-        return self._executeTask(False, self._doBack)
+        return self._execute_task(False, self._doBack)
 
     def safeTraj(self):
         """
         Safely Moves the robot arm and the gripper to the home position
         """
-        return self._executeTask(False, self._doSafe)
+        return self._execute_task(False, self._doSafe)
 
     # MS 2014-11-18
     def homeTraj(self):
         """
         Moves the robot arm to the home position
         """
-        return self._executeTask(False, self._doHome)
+        return self._execute_task(False, self._doHome)
 
     def dryTraj(self):
         """
         Drying the gripper
         """
-        return self._executeTask(False, self._doDry)
+        return self._execute_task(False, self._doDry)
 
     def drySoakTraj(self):
         """
         Dry and Soak the gripper
         """
-        return self._executeTask(False, self._doDrySoak)
+        return self._execute_task(False, self._doDrySoak)
 
     def soakTraj(self):
         """
         Soaking the gripper
         """
-        return self._executeTask(False, self._doSoak)
+        return self._execute_task(False, self._doSoak)
 
     def integratedToolCal(self):
-        return self._executeTask(False, self._doIntegratedToolCal)
+        return self._execute_task(False, self._doIntegratedToolCal)
 
     def clearMemory(self):
         """
         Clears the memory
         """
-        return self._executeTask(False, self._doClearMemory)
+        return self._execute_task(False, self._doClearMemory)
 
     def ackSampleMemory(self):
         """
         Acknowledge incoherence between memorized and actual sample status -- e.g. if robot executed put trajectory but no sample was mounted on the gonio -- either because of empty position or problem with gripper.
         """
-        return self._executeTask(False, self._doAckSampleMemory)
+        return self._execute_task(False, self._doAckSampleMemory)
 
     def opentool(self):
         """
         Drying the gripper
         """
-        return self._executeTask(False, self._doOpentool)
+        return self._execute_task(False, self._doOpentool)
 
     def toolcalTraj(self):
         """
         Soaking the gripper
         """
-        return self._executeTask(False, self._doToolCal)
+        return self._execute_task(False, self._doToolCal)
 
     ###
 
     def missingSample(self):
         self._doAckSampleMemory()
         self._doClearMemory()
-        self._doResetError()
+        self._do_resetError()
 
-    def _doAbort(self):
+    def _do_Abort(self):
         """
         Launch the "abort" trajectory on the CATS Tango DS
 
@@ -178,7 +178,7 @@ class SOLEILCatsMaint(Equipment):
         """
         self._cmdAbort()
 
-    def _doResetError(self):
+    def _do_resetError(self):
         """
         Launch the "reset" command on the CATS Tango DS
 
@@ -391,7 +391,7 @@ class SOLEILCatsMaint(Equipment):
 
     #########################          PROTECTED          #########################
 
-    def _executeTask(self, wait, method, *args):
+    def _execute_task(self, wait, method, *args):
         ret = self._run(method, wait=False, *args)
         if wait:
             return ret.get()

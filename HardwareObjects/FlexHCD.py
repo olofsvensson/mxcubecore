@@ -16,25 +16,25 @@ from PyTango.gevent import DeviceProxy
 class Pin(Sample):
     def __init__(self, basket, cell_no, basket_no, sample_no):
         super(Pin, self).__init__(
-            basket, Pin.getSampleAddress(cell_no, basket_no, sample_no), True
+            basket, Pin.get_sample_address(cell_no, basket_no, sample_no), True
         )
-        self._setHolderLength(22.0)
+        self._set_holder_length(22.0)
         self.present = True
 
-    def getBasketNo(self):
-        return self.getContainer().getIndex() + 1
+    def get_basket_no(self):
+        return self.get_container().get_index() + 1
 
-    def getVialNo(self):
-        return self.getIndex() + 1
+    def get_vial_no(self):
+        return self.get_index() + 1
 
     def getCellNo(self):
-        return self.getContainer().getContainer().getIndex() + 1
+        return self.get_container().get_container().get_index() + 1
 
     def getCell(self):
-        return self.getContainer().getContainer()
+        return self.get_container().get_container()
 
     @staticmethod
-    def getSampleAddress(cell_number, basket_number, sample_number):
+    def get_sample_address(cell_number, basket_number, sample_number):
         return (
             str(cell_number) + ":" + str(basket_number) + ":" + "%02d" % sample_number
         )
@@ -45,26 +45,26 @@ class Basket(Container):
 
     def __init__(self, container, cell_no, basket_no, unipuck=False):
         super(Basket, self).__init__(
-            self.__TYPE__, container, Basket.getBasketAddress(cell_no, basket_no), True
+            self.__TYPE__, container, Basket.get_basket_address(cell_no, basket_no), True
         )
         for i in range(16 if unipuck else 10):
             slot = Pin(self, cell_no, basket_no, i + 1)
-            self._addComponent(slot)
+            self._add_component(slot)
         self.present = True
 
     @staticmethod
-    def getBasketAddress(cell_number, basket_number):
+    def get_basket_address(cell_number, basket_number):
         return str(cell_number) + ":" + str(basket_number)
 
     def getCellNo(self):
-        return self.getContainer().getIndex() + 1
+        return self.get_container().get_index() + 1
 
     def getCell(self):
-        return self.getContainer()
+        return self.get_container()
 
-    def clearInfo(self):
-        self.getContainer()._reset_basket_info(self.getIndex() + 1)
-        self.getContainer()._triggerInfoChangedEvent()
+    def clear_info(self):
+        self.get_container()._reset_basket_info(self.get_index() + 1)
+        self.get_container()._trigger_info_changed_event()
 
 
 class Cell(Container):
@@ -77,12 +77,12 @@ class Cell(Container):
         self.present = True
         if sc3_pucks:
             for i in range(3):
-                self._addComponent(
+                self._add_component(
                     Basket(self, number, i + 1, unipuck=1 - (number % 2))
                 )
         else:
             for i in range(3):
-                self._addComponent(Basket(self, number, i + 1, unipuck=True))
+                self._add_component(Basket(self, number, i + 1, unipuck=True))
 
     @staticmethod
     def getCellAddress(cell_number):
@@ -91,9 +91,9 @@ class Cell(Container):
     def _reset_basket_info(self, basket_no):
         pass
 
-    def clearInfo(self):
-        self.getContainer()._reset_cell_info(self.getIndex() + 1)
-        self.getContainer()._triggerInfoChangedEvent()
+    def clear_info(self):
+        self.get_container()._reset_cell_info(self.get_index() + 1)
+        self.get_container()._trigger_info_changed_event()
 
     def getCell(self):
         return self
@@ -110,7 +110,7 @@ class FlexHCD(SampleChanger):
 
         for i in range(8):
             cell = Cell(self, i + 1, sc3_pucks)
-            self._addComponent(cell)
+            self._add_component(cell)
 
         self.robot = self.getProperty("tango_device")
         if self.robot:
@@ -162,29 +162,29 @@ class FlexHCD(SampleChanger):
     def prepareCentring(self):
         self.prepare_centring()
 
-    def getSampleProperties(self):
+    def get_sample_properties(self):
         return (Pin.__HOLDER_LENGTH_PROPERTY__,)
 
-    def getBasketList(self):
+    def get_basket_list(self):
         basket_list = []
         # put here only the baskets that exist, not all the possible ones
         # if self.exporter_addr:
         #    basket_list =
-        for cell in self.getComponents():
-            for basket in cell.getComponents():
+        for cell in self.get_components():
+            for basket in cell.get_components():
                 if isinstance(basket, Basket):
                     basket_list.append(basket)
 
         return basket_list
 
-    def _doChangeMode(self, *args, **kwargs):
+    def _do_change_mode(self, *args, **kwargs):
         return
 
-    def _doUpdateInfo(self):
+    def _do_update_info(self):
         # self._updateSelection()
         self._updateState()
 
-    def _doScan(self, component, recursive=True, saved={"barcodes": None}):
+    def _do_Scan(self, component, recursive=True, saved={"barcodes": None}):
         return
 
     def _execute_cmd(self, cmd, *args, **kwargs):
@@ -261,9 +261,9 @@ class FlexHCD(SampleChanger):
             while not self._ready():
                 time.sleep(0.5)
 
-    def _doSelect(self, component):
+    def _do_select(self, component):
         if isinstance(component, Cell):
-            cell_pos = component.getIndex() + 1
+            cell_pos = component.get_index() + 1
         elif isinstance(component, Basket) or isinstance(component, Pin):
             cell_pos = component.getCellNo()
 
@@ -285,7 +285,7 @@ class FlexHCD(SampleChanger):
         prepareCentring=True,
     ):
         cell, basket, sample = sample_location
-        sample = self.getComponentByAddress(Pin.getSampleAddress(cell, basket, sample))
+        sample = self.get_component_by_address(Pin.get_sample_address(cell, basket, sample))
         return self.load(sample)
 
     def chained_load(self, old_sample, sample):
@@ -294,8 +294,8 @@ class FlexHCD(SampleChanger):
                 self._execute_cmd_exporter,
                 "loadSample",
                 sample.getCellNo(),
-                sample.getBasketNo(),
-                sample.getVialNo(),
+                sample.get_basket_no(),
+                sample.get_vial_no(),
                 command=True,
             )
         else:
@@ -304,10 +304,10 @@ class FlexHCD(SampleChanger):
                 "chainedUnldLd",
                 [
                     old_sample.getCellNo(),
-                    old_sample.getBasketNo(),
-                    old_sample.getVialNo(),
+                    old_sample.get_basket_no(),
+                    old_sample.get_vial_no(),
                 ],
-                [sample.getCellNo(), sample.getBasketNo(), sample.getVialNo()],
+                [sample.getCellNo(), sample.get_basket_no(), sample.get_vial_no()],
             )
 
         gevent.sleep(15)
@@ -319,7 +319,7 @@ class FlexHCD(SampleChanger):
                     "getCurrentLoadSampleState", attribute=True
                 )
                 if "on_gonio" in loading_state:
-                    self._setLoadedSample(sample)
+                    self._set_loaded_sample(sample)
                     with gevent.Timeout(20, RuntimeError(err_msg)):
                         while not self._execute_cmd_exporter(
                             "getRobotIsSafe", attribute=True
@@ -331,7 +331,7 @@ class FlexHCD(SampleChanger):
                     self._execute_cmd("sampleStatus", "LoadSampleStatus")
                 )
                 if "on_gonio" in loading_state:
-                    self._setLoadedSample(sample)
+                    self._set_loaded_sample(sample)
                     with gevent.Timeout(20, RuntimeError(err_msg)):
                         while (
                             not self._execute_cmd(
@@ -361,7 +361,7 @@ class FlexHCD(SampleChanger):
             return True
         else:
             logging.getLogger("HWR").info("reset loaded sample")
-            self._resetLoadedSample()
+            self._reset_loaded_sample()
             # if self.controller:
             #    self.controller.hutch_actions(release_interlock=True)
             return False
@@ -371,7 +371,7 @@ class FlexHCD(SampleChanger):
             self._execute_cmd_exporter("reset_loaded_position", command=True)
         else:
             self._execute_cmd("reset_loaded_position")
-        self._resetLoadedSample()
+        self._reset_loaded_sample()
 
     def get_robot_exceptions(self):
         if self.exporter_addr:
@@ -406,7 +406,7 @@ class FlexHCD(SampleChanger):
         failureCallback=None,
     ):
         cell, basket, sample = sample_location
-        sample = self.getComponentByAddress(Pin.getSampleAddress(cell, basket, sample))
+        sample = self.get_component_by_address(Pin.get_sample_address(cell, basket, sample))
         return self.unload(sample)
 
     @task
@@ -473,15 +473,15 @@ class FlexHCD(SampleChanger):
         else:
             self._execute_cmd("defreezeGripper")
 
-    def _doLoad(self, sample=None):
+    def _do_load(self, sample=None):
         self._updateState()
         if self.exporter_addr:
             load_task = gevent.spawn(
                 self._execute_cmd_exporter,
                 "loadSample",
                 sample.getCellNo(),
-                sample.getBasketNo(),
-                sample.getVialNo(),
+                sample.get_basket_no(),
+                sample.get_vial_no(),
                 command=True,
             )
         else:
@@ -489,8 +489,8 @@ class FlexHCD(SampleChanger):
                 self._execute_cmd,
                 "loadSample",
                 sample.getCellNo(),
-                sample.getBasketNo(),
-                sample.getVialNo(),
+                sample.get_basket_no(),
+                sample.get_vial_no(),
             )
         gevent.sleep(5)
 
@@ -501,7 +501,7 @@ class FlexHCD(SampleChanger):
                     "getCurrentLoadSampleState", attribute=True
                 )
                 if "on_gonio" in loading_state:
-                    self._setLoadedSample(sample)
+                    self._set_loaded_sample(sample)
                     with gevent.Timeout(20, RuntimeError(err_msg)):
                         while not self._execute_cmd_exporter(
                             "getRobotIsSafe", attribute=True
@@ -513,7 +513,7 @@ class FlexHCD(SampleChanger):
                     self._execute_cmd("sampleStatus", "LoadSampleStatus")
                 )
                 if "on_gonio" in loading_state:
-                    self._setLoadedSample(sample)
+                    self._set_loaded_sample(sample)
                     with gevent.Timeout(20, RuntimeError(err_msg)):
                         while (
                             not self._execute_cmd(
@@ -533,15 +533,15 @@ class FlexHCD(SampleChanger):
             loaded_sample = self._execute_cmd("get_loaded_sample")
         if loaded_sample == (
             sample.getCellNo(),
-            sample.getBasketNo(),
-            sample.getVialNo(),
+            sample.get_basket_no(),
+            sample.get_vial_no(),
         ):
-            self._setLoadedSample(sample)
+            self._set_loaded_sample(sample)
             return True
         return self._check_pin_on_gonio()
 
-    def _doUnload(self, sample=None):
-        loaded_sample = self.getLoadedSample()
+    def _do_unload(self, sample=None):
+        loaded_sample = self.get_loaded_sample()
         if loaded_sample is not None and loaded_sample != sample:
             raise RuntimeError("Cannot unload another sample")
 
@@ -549,8 +549,8 @@ class FlexHCD(SampleChanger):
             self._execute_cmd_exporter(
                 "unloadSample",
                 sample.getCellNo(),
-                sample.getBasketNo(),
-                sample.getVialNo(),
+                sample.get_basket_no(),
+                sample.get_vial_no(),
                 command=True,
             )
             loaded_sample = self._execute_cmd_exporter(
@@ -560,24 +560,24 @@ class FlexHCD(SampleChanger):
             self._execute_cmd(
                 "unloadSample",
                 sample.getCellNo(),
-                sample.getBasketNo(),
-                sample.getVialNo(),
+                sample.get_basket_no(),
+                sample.get_vial_no(),
             )
             loaded_sample = self._execute_cmd("get_loaded_sample")
         if loaded_sample == (-1, -1, -1):
-            self._resetLoadedSample()
+            self._reset_loaded_sample()
             if self.controller:
                 self.controller.hutch_actions(release_interlock=True)
             return True
         return False
 
-    def _doAbort(self):
+    def _do_Abort(self):
         if self.exporter_addr:
             self._execute_cmd_exporter("abort", command=True)
         else:
             self._execute_cmd("abort")
 
-    def _doReset(self):
+    def _do_reset(self):
         if self.exporter_addr:
             self._execute_cmd_exporter("homeClear", command=True)
         else:
@@ -600,14 +600,14 @@ class FlexHCD(SampleChanger):
         if not self.exporter_addr:
             defreezing = self._execute_cmd("isDefreezing")
             if defreezing:
-                self._setState(SampleChangerState.Ready)
+                self._set_state(SampleChangerState.Ready)
 
         try:
             state = self._readState()
         except Exception:
             state = SampleChangerState.Unknown
 
-        self._setState(state)
+        self._set_state(state)
 
     def isSequencerReady(self):
         if self.prepareLoad:
@@ -670,22 +670,22 @@ class FlexHCD(SampleChanger):
             cell, puck = self._execute_cmd("get_cell_position")
             sample_cell, sample_puck, sample = self._execute_cmd("get_loaded_sample")
 
-        for c in self.getComponents():
-            i = c.getIndex()
+        for c in self.get_components():
+            i = c.get_index()
             if cell == i + 1:
-                self._setSelectedComponent(c)
+                self._set_selected_component(c)
                 break
 
         # find sample
-        for s in self.getSampleList():
-            if s.getCoords() == (sample_cell, sample_puck, sample):
-                self._setLoadedSample(s)
-                # self._setSelectedSample(s)
+        for s in self.get_sample_list():
+            if s.get_coords() == (sample_cell, sample_puck, sample):
+                self._set_loaded_sample(s)
+                # self._set_selected_sample(s)
                 return
 
-        for s in self.getSampleList():
-            s._setLoaded(False)
-        self._setSelectedSample(None)
+        for s in self.get_sample_list():
+            s._set_loaded(False)
+        self._set_selected_sample(None)
 
     def prepare_hutch(self, **kwargs):
         if self.exporter_addr:

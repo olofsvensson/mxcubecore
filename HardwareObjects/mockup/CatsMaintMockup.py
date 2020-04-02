@@ -69,7 +69,7 @@ class CatsMaintMockup(Equipment):
         return self._currenttool
 
     ################################################################################
-    def _doAbort(self):
+    def _do_Abort(self):
         """
         Launch the "abort" trajectory on the CATS Tango DS
 
@@ -78,7 +78,7 @@ class CatsMaintMockup(Equipment):
         """
         pass
 
-    def _doReset(self):
+    def _do_reset(self):
         """
         Launch the "reset" command on the CATS Tango DS
 
@@ -178,7 +178,7 @@ class CatsMaintMockup(Equipment):
 
     #########################          PROTECTED          #########################
 
-    def _executeTask(self, wait, method, *args):
+    def _execute_task(self, wait, method, *args):
         ret = self._run(method, *args)
         if wait:
             return ret.get()

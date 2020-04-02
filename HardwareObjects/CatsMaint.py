@@ -365,15 +365,15 @@ class CatsMaint(Equipment):
         """
         Moves a sample from the gripper back into the dewar to its logged position.
         """
-        return self._executeTask(False, self._doBack)
+        return self._execute_task(False, self._doBack)
 
     def safeTraj(self):
         """
         Safely Moves the robot arm and the gripper to the home position
         """
-        return self._executeTask(False, self._doSafe)
+        return self._execute_task(False, self._doSafe)
 
-    def _doAbort(self):
+    def _do_Abort(self):
         """
         Launch the "abort" trajectory on the CATS Tango DS
 
@@ -392,7 +392,7 @@ class CatsMaint(Equipment):
         tool = self.get_current_tool()
         self._cmdHome(tool)
 
-    def _doReset(self):
+    def _do_reset(self):
         """
         Launch the "reset" command on the CATS Tango DS
 
@@ -403,7 +403,7 @@ class CatsMaint(Equipment):
         return
         self._cmdReset()
 
-    def _doResetMemory(self):
+    def _do_resetMemory(self):
         """
         Launch the "reset memory" command on the CATS Tango DS
 
@@ -415,7 +415,7 @@ class CatsMaint(Equipment):
         self._cmdResetParameters()
         time.sleep(1)
 
-    def _doResetMotion(self):
+    def _do_resetMotion(self):
         """
         Launch the "reset_motion" command on the CATS Tango DS
 
@@ -595,7 +595,7 @@ class CatsMaint(Equipment):
 
     # ########################          PROTECTED          #########################
 
-    def _executeTask(self, wait, method, *args):
+    def _execute_task(self, wait, method, *args):
         ret = self._run(method, wait=False, *args)
         if wait:
             return ret.get()

@@ -82,7 +82,7 @@ class BIOMAXBeamlineActions(HardwareObject):
             HWR.beamline.detector.distance.set_value(800, timeout=50)
 
         if HWR.beamline.sample_changer.isPowered():
-            if HWR.beamline.sample_changer.getLoadedSample() is not None:
+            if HWR.beamline.sample_changer.get_loaded_sample() is not None:
                 logging.getLogger("HWR").info("Unloading mounted sample.")
                 HWR.beamline.sample_changer.unload(None, wait=True)
                 HWR.beamline.sample_changer._waitDeviceReady(30)

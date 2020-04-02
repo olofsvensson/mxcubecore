@@ -72,38 +72,38 @@ class Basket(Container):
 
     def __init__(self, container, number, samples_num=10, name="Puck"):
         super(Basket, self).__init__(
-            self.__TYPE__, container, Basket.getBasketAddress(number), True
+            self.__TYPE__, container, Basket.get_basket_address(number), True
         )
 
         self.samples_num = samples_num
 
         for i in range(samples_num):
             slot = Pin(self, number, i + 1)
-            self._addComponent(slot)
+            self._add_component(slot)
 
     @staticmethod
-    def getBasketAddress(basket_number):
+    def get_basket_address(basket_number):
         return str(basket_number)
 
-    def getNumberOfSamples(self):
+    def get_number_of_samples(self):
         return self.samples_num
 
-    def clearInfo(self):
-        # self.getContainer()._reset_basket_info(self.getIndex()+1)
-        self.getContainer()._triggerInfoChangedEvent()
+    def clear_info(self):
+        # self.get_container()._reset_basket_info(self.get_index()+1)
+        self.get_container()._trigger_info_changed_event()
 
 
 class SpineBasket(Basket):
     def __init__(self, container, number, name="SpinePuck"):
         super(SpineBasket, self).__init__(
-            container, Basket.getBasketAddress(number), SAMPLES_SPINE, True
+            container, Basket.get_basket_address(number), SAMPLES_SPINE, True
         )
 
 
 class UnipuckBasket(Basket):
     def __init__(self, container, number, name="UniPuck"):
         super(UnipuckBasket, self).__init__(
-            container, Basket.getBasketAddress(number), SAMPLES_UNIPUCK, True
+            container, Basket.get_basket_address(number), SAMPLES_UNIPUCK, True
         )
 
 
@@ -112,18 +112,18 @@ class Pin(Sample):
 
     def __init__(self, basket, basket_no, sample_no):
         super(Pin, self).__init__(
-            basket, Pin.getSampleAddress(basket_no, sample_no), False
+            basket, Pin.get_sample_address(basket_no, sample_no), False
         )
-        self._setHolderLength(Pin.STD_HOLDERLENGTH)
+        self._set_holder_length(Pin.STD_HOLDERLENGTH)
 
-    def getBasketNo(self):
-        return self.getContainer().getIndex() + 1
+    def get_basket_no(self):
+        return self.get_container().get_index() + 1
 
-    def getVialNo(self):
-        return self.getIndex() + 1
+    def get_vial_no(self):
+        return self.get_index() + 1
 
     @staticmethod
-    def getSampleAddress(basket_number, sample_number):
+    def get_sample_address(basket_number, sample_number):
         if basket_number is not None and sample_number is not None:
             return str(basket_number) + ":" + "%02d" % (sample_number)
         else:
@@ -531,7 +531,7 @@ class Cats90(SampleChanger):
         except BaseException:
             pass
 
-        self.updateInfo()
+        self.update_info()
 
     def connectNotify(self, signal):
         if signal == SampleChanger.INFO_CHANGED_EVENT:
@@ -562,36 +562,36 @@ class Cats90(SampleChanger):
             else:
                 basket = Basket(self, i + 1, samples_num=self.samples_per_basket)
 
-            self._addComponent(basket)
+            self._add_component(basket)
 
         # write the default basket information into permanent Basket objects
         for basket_index in range(self.number_of_baskets):
-            basket = self.getComponents()[basket_index]
+            basket = self.get_components()[basket_index]
             datamatrix = None
             present = scanned = False
-            basket._setInfo(present, datamatrix, scanned)
+            basket._set_info(present, datamatrix, scanned)
 
         # create temporary list with default sample information and indices
         sample_list = []
         for basket_index in range(self.number_of_baskets):
-            basket = self.getComponents()[basket_index]
-            for sample_index in range(basket.getNumberOfSamples()):
+            basket = self.get_components()[basket_index]
+            for sample_index in range(basket.get_number_of_samples()):
                 sample_list.append(
                     ("", basket_index + 1, sample_index + 1, 1, Pin.STD_HOLDERLENGTH)
                 )
 
         # write the default sample information into permanent Pin objects
         for spl in sample_list:
-            sample = self.getComponentByAddress(Pin.getSampleAddress(spl[1], spl[2]))
+            sample = self.get_component_by_address(Pin.get_sample_address(spl[1], spl[2]))
             datamatrix = None
             present = scanned = loaded = has_been_loaded = False
-            sample._setInfo(present, datamatrix, scanned)
-            sample._setLoaded(loaded, has_been_loaded)
-            sample._setHolderLength(spl[4])
+            sample._set_info(present, datamatrix, scanned)
+            sample._set_loaded(loaded, has_been_loaded)
+            sample._set_holder_length(spl[4])
 
         logging.getLogger("HWR").warning("Cats90:  initializing contents done")
 
-    def getSampleProperties(self):
+    def get_sample_properties(self):
         """
         Get the sample's holder length
 
@@ -600,9 +600,9 @@ class Cats90(SampleChanger):
         """
         return (Pin.__HOLDER_LENGTH_PROPERTY__,)
 
-    def getBasketList(self):
+    def get_basket_list(self):
         basket_list = []
-        for basket in self.getComponents():
+        for basket in self.get_components():
             if isinstance(basket, Basket):
                 basket_list.append(basket)
         return basket_list
@@ -633,7 +633,7 @@ class Cats90(SampleChanger):
 
     # ########################           TASKS           #########################
 
-    def _doUpdateInfo(self):
+    def _do_update_info(self):
         """
         Updates the sample changers status: mounted pucks, state, currently loaded sample
 
@@ -649,7 +649,7 @@ class Cats90(SampleChanger):
         self._doUpdateState()
         self._doUpdateLoadedSample()
 
-    def _doChangeMode(self, mode):
+    def _do_change_mode(self, mode):
         """
         Changes the SC operation mode, not implemented for the CATS system
 
@@ -666,21 +666,21 @@ class Cats90(SampleChanger):
                 and basket_no > 0
                 and basket_no <= self.number_of_baskets
             ):
-                basket = self.getComponentByAddress(Basket.getBasketAddress(basket_no))
+                basket = self.get_component_by_address(Basket.get_basket_address(basket_no))
                 if (
                     sample_no is not None
                     and sample_no > 0
-                    and sample_no <= basket.getNumberOfSamples()
+                    and sample_no <= basket.get_number_of_samples()
                 ):
-                    sample = self.getComponentByAddress(
-                        Pin.getSampleAddress(basket_no, sample_no)
+                    sample = self.get_component_by_address(
+                        Pin.get_sample_address(basket_no, sample_no)
                     )
         except BaseException:
             pass
-        self._setSelectedComponent(basket)
-        self._setSelectedSample(sample)
+        self._set_selected_component(basket)
+        self._set_selected_sample(sample)
 
-    def _doSelect(self, component):
+    def _do_select(self, component):
         """
         Selects a new component (basket or sample).
         Uses method >_directlyUpdateSelectedComponent< to actually search and select the corrected positions.
@@ -693,45 +693,45 @@ class Cats90(SampleChanger):
         )
 
         if isinstance(component, Sample):
-            selected_basket_no = component.getBasketNo()
-            selected_sample_no = component.getIndex() + 1
+            selected_basket_no = component.get_basket_no()
+            selected_sample_no = component.get_index() + 1
         elif isinstance(component, Container) and (
-            component.getType() == Basket.__TYPE__
+            component.get_type() == Basket.__TYPE__
         ):
-            selected_basket_no = component.getIndex() + 1
+            selected_basket_no = component.get_index() + 1
             selected_sample_no = None
         elif isinstance(component, tuple) and len(component) == 2:
             selected_basket_no = component[0]
             selected_sample_no = component[1]
         self._directlyUpdateSelectedComponent(selected_basket_no, selected_sample_no)
 
-    def _doScan(self, component, recursive):
+    def _do_Scan(self, component, recursive):
         """
         Scans the barcode of a single sample, puck or recursively even the complete sample changer.
 
         :returns: None
         :rtype: None
         """
-        selected_basket = self.getSelectedComponent()
+        selected_basket = self.get_selected_component()
 
         if isinstance(component, Sample):
             # scan a single sample
             if (selected_basket is None) or (
-                selected_basket != component.getContainer()
+                selected_basket != component.get_container()
             ):
-                self._doSelect(component)
+                self._do_select(component)
 
-            selected = self.getSelectedSample()
+            selected = self.get_selected_sample()
 
-            # self._executeServerTask(self._scan_samples, [component.getIndex()+1,])
+            # self._executeServerTask(self._scan_samples, [component.get_index()+1,])
             lid, sample = self.basketsample_to_lidsample(
-                selected.getBasketNo(), selected.getVialNo()
+                selected.get_basket_no(), selected.get_vial_no()
             )
             argin = ["2", str(lid), str(sample), "0", "0"]
             self._executeServerTask(self._cmdScanSample, argin)
             self._updateSampleBarcode(component)
         elif isinstance(component, Container) and (
-            component.getType() == Basket.__TYPE__
+            component.get_type() == Basket.__TYPE__
         ):
             # component is a basket
             basket = component
@@ -739,12 +739,12 @@ class Cats90(SampleChanger):
                 pass
             else:
                 if (selected_basket is None) or (selected_basket != basket):
-                    self._doSelect(basket)
+                    self._do_select(basket)
 
-                selected = self.getSelectedSample()
+                selected = self.get_selected_sample()
 
-                for sample_index in range(basket.getNumberOfSamples()):
-                    basket = selected.getBasketNo()
+                for sample_index in range(basket.get_number_of_samples()):
+                    basket = selected.get_basket_no()
                     num = sample_index + 1
                     lid, sample = self.basketsample_to_lidsample(basket, num)
                     argin = ["2", str(lid), str(sample), "0", "0"]
@@ -755,7 +755,7 @@ class Cats90(SampleChanger):
         Load a sample.
             overwrite original load() from AbstractSampleChanger to allow finer decision
             on command to use (with or without barcode / or allow for wash in some cases)
-            Implement that logic in _doLoad()
+            Implement that logic in _do_load()
             Add initial verification about the Powered:
             (NOTE) In fact should be already as the power is considered in the state handling
         """
@@ -770,12 +770,12 @@ class Cats90(SampleChanger):
             "   ==========CATS== load cmd .state is:  %s " % (self.state)
         )
 
-        sample = self._resolveComponent(sample)
-        self.assertNotCharging()
+        sample = self._resolve_component(sample)
+        self.assert_not_charging()
 
-        self._executeTask(SampleChangerState.Loading, wait, self._doLoad, sample)
+        self._execute_task(SampleChangerState.Loading, wait, self._do_load, sample)
 
-    def _doLoad(self, sample=None, shifts=None):
+    def _do_load(self, sample=None, shifts=None):
         """
         Loads a sample on the diffractometer. Performs a simple put operation if the diffractometer is empty, and
         a sample exchange (unmount of old + mount of new sample) if a sample is already mounted on the diffractometer.
@@ -791,19 +791,19 @@ class Cats90(SampleChanger):
                     "CATS power cannot be enabled. Please check arm power before transferring samples."
                 )
 
-        selected = self.getSelectedSample()
+        selected = self.get_selected_sample()
         if sample is not None:
             if sample != selected:
-                self._doSelect(sample)
-                selected = self.getSelectedSample()
+                self._do_select(sample)
+                selected = self.get_selected_sample()
         else:
             if selected is not None:
                 sample = selected
             else:
                 raise Exception("No sample selected")
 
-        basketno = selected.getBasketNo()
-        sampleno = selected.getVialNo()
+        basketno = selected.get_basket_no()
+        sampleno = selected.get_vial_no()
 
         lid, sample = self.basketsample_to_lidsample(basketno, sampleno)
 
@@ -834,11 +834,11 @@ class Cats90(SampleChanger):
             % (argin, basketno, sampleno)
         )
 
-        if self.hasLoadedSample():
-            if selected == self.getLoadedSample():
+        if self.has_loaded_sample():
+            if selected == self.get_loaded_sample():
                 raise Exception(
                     "The sample "
-                    + str(self.getLoadedSample().getAddress())
+                    + str(self.get_loaded_sample().get_address())
                     + " is already loaded"
                 )
             else:
@@ -878,7 +878,7 @@ class Cats90(SampleChanger):
                     )
                     self._executeServerTask(self._cmdLoad, argin)
 
-    def _doUnload(self, sample_slot=None, shifts=None):
+    def _do_unload(self, sample_slot=None, shifts=None):
         """
         Unloads a sample from the diffractometer.
 
@@ -890,14 +890,14 @@ class Cats90(SampleChanger):
                 "CATS power is not enabled. Please switch on arm power before transferring samples."
             )
 
-        if not self.hasLoadedSample() or not self._chnSampleIsDetected.getValue():
+        if not self.has_loaded_sample() or not self._chnSampleIsDetected.getValue():
             logging.getLogger("HWR").warning(
                 "  Trying do unload sample, but it does not seem to be any on diffr:  %s"
                 % argin
             )
 
         if sample_slot is not None:
-            self._doSelect(sample_slot)
+            self._do_select(sample_slot)
 
         if shifts is None:
             xshift, yshift, zshift = ["0", "0", "0"]
@@ -926,7 +926,7 @@ class Cats90(SampleChanger):
         )
         self._executeServerTask(self._cmdUnload, argin)
 
-    def _onTaskFailed(self, task, exception):
+    def _on_task_failed(self, task, exception):
 
         if task in [SampleChangerState.Loading, SampleChangerState.Unloading]:
             logging.getLogger("HWR").warning(
@@ -939,7 +939,7 @@ class Cats90(SampleChanger):
 
     # ###############################################################################
 
-    def _doAbort(self):
+    def _do_Abort(self):
         """
         Aborts a running trajectory on the sample changer.
 
@@ -949,7 +949,7 @@ class Cats90(SampleChanger):
         self._cmdAbort()
         self._updateState()  # remove software flags like Loading.. reflects current hardware state
 
-    def _doReset(self):
+    def _do_reset(self):
         pass
 
     # ########################           CATS EVENTS           #########################
@@ -1048,8 +1048,8 @@ class Cats90(SampleChanger):
         )
         self.emit("barcodeChanged", (value,))
 
-        sample = self.getComponentByAddress(Pin.getSampleAddress(basketno, sampleno))
-        sample._setInfo(sample.isPresent(), value, scanned)
+        sample = self.get_component_by_address(Pin.get_sample_address(basketno, sampleno))
+        sample._set_info(sample.is_present(), value, scanned)
 
     def cats_sample_on_diffr(self):
         detected = self._chnSampleIsDetected.getValue()
@@ -1136,7 +1136,7 @@ class Cats90(SampleChanger):
 
     def _updateState(self):
 
-        has_loaded = self.hasLoadedSample()
+        has_loaded = self.has_loaded_sample()
         on_diff = self._chnSampleIsDetected.getValue()
 
         state = self._decideState(
@@ -1148,7 +1148,7 @@ class Cats90(SampleChanger):
         )
 
         status = SampleChangerState.tostring(state)
-        self._setState(state, status)
+        self._set_state(state, status)
 
     def _readState(self):
         """
@@ -1160,7 +1160,7 @@ class Cats90(SampleChanger):
         _state = self._chnState.getValue()
         _powered = self._chnPowered.getValue()
         _lids_closed = self._chnAllLidsClosed.getValue()
-        _has_loaded = self.hasLoadedSample()
+        _has_loaded = self.has_loaded_sample()
         _on_diff = self._chnSampleIsDetected.getValue()
 
         # hack for transient states
@@ -1200,7 +1200,7 @@ class Cats90(SampleChanger):
             # or registered but not on the gonio anymore
             logging.getLogger("HWR").warning(
                 "SAMPLE CHANGER Unknown 2 (hasLoaded: %s / detected: %s)"
-                % (self.hasLoadedSample(), self._chnSampleIsDetected.getValue())
+                % (self.has_loaded_sample(), self._chnSampleIsDetected.getValue())
             )
             _state = SampleChangerState.Unknown
         # elif not lids_closed:
@@ -1359,14 +1359,14 @@ class Cats90(SampleChanger):
             basket, sample = self.lidsample_to_basketsample(
                 loadedSampleLid, loadedSampleNum
             )
-            new_sample = self.getComponentByAddress(
-                Pin.getSampleAddress(basket, sample)
+            new_sample = self.get_component_by_address(
+                Pin.get_sample_address(basket, sample)
             )
         else:
             basket, sample = None, None
             new_sample = None
 
-        old_sample = self.getLoadedSample()
+        old_sample = self.get_loaded_sample()
 
         logging.getLogger("HWR").debug(
             "----- Cats90 -----.  Sample has changed. Dealing with it - new_sample = %s / old_sample = %s"
@@ -1380,20 +1380,20 @@ class Cats90(SampleChanger):
                 # there was a sample on the gonio
                 loaded = False
                 has_been_loaded = True
-                old_sample._setLoaded(loaded, has_been_loaded)
+                old_sample._set_loaded(loaded, has_been_loaded)
 
             if new_sample is not None:
                 loaded = True
                 has_been_loaded = True
-                new_sample._setLoaded(loaded, has_been_loaded)
+                new_sample._set_loaded(loaded, has_been_loaded)
 
             if (
                 (old_sample is None)
                 or (new_sample is None)
-                or (old_sample.getAddress() != new_loaded.getAddress())
+                or (old_sample.get_address() != new_loaded.get_address())
             ):
-                self._triggerLoadedSampleChangedEvent(new_sample)
-                self._triggerInfoChangedEvent()
+                self._trigger_loaded_sample_changed_event(new_sample)
+                self._trigger_info_changed_event()
 
     def _updateSampleBarcode(self, sample):
         """
@@ -1412,7 +1412,7 @@ class Cats90(SampleChanger):
             datamatrix = "----------"
         else:
             datamatrix = self.cats_datamatrix
-        sample._setInfo(sample.isPresent(), datamatrix, scanned)
+        sample._set_info(sample.is_present(), datamatrix, scanned)
 
     def _doUpdateCatsContents(self):
         """
@@ -1440,74 +1440,74 @@ class Cats90(SampleChanger):
         )
         for basket_index in range(self.number_of_baskets):
             # get saved presence information from object's internal bookkeeping
-            basket = self.getComponents()[basket_index]
+            basket = self.get_components()[basket_index]
             is_present = self.basket_presence[basket_index]
 
             if is_present is None:
                 continue
 
             # check if the basket presence has changed
-            if is_present ^ basket.isPresent():
+            if is_present ^ basket.is_present():
                 # a mounting action was detected ...
                 if is_present:
                     # basket was mounted
                     present = True
                     scanned = False
                     datamatrix = None
-                    basket._setInfo(present, datamatrix, scanned)
+                    basket._set_info(present, datamatrix, scanned)
                 else:
                     # basket was removed
                     present = False
                     scanned = False
                     datamatrix = None
-                    basket._setInfo(present, datamatrix, scanned)
+                    basket._set_info(present, datamatrix, scanned)
 
                 # set the information for all dependent samples
-                for sample_index in range(basket.getNumberOfSamples()):
-                    sample = self.getComponentByAddress(
-                        Pin.getSampleAddress((basket_index + 1), (sample_index + 1))
+                for sample_index in range(basket.get_number_of_samples()):
+                    sample = self.get_component_by_address(
+                        Pin.get_sample_address((basket_index + 1), (sample_index + 1))
                     )
-                    present = sample.getContainer().isPresent()
+                    present = sample.get_container().is_present()
                     if present:
                         datamatrix = "          "
                     else:
                         datamatrix = None
                     scanned = False
-                    sample._setInfo(present, datamatrix, scanned)
+                    sample._set_info(present, datamatrix, scanned)
 
                     # forget about any loaded state in newly mounted or removed basket)
                     loaded = has_been_loaded = False
-                    sample._setLoaded(loaded, has_been_loaded)
+                    sample._set_loaded(loaded, has_been_loaded)
 
-        self._triggerContentsUpdatedEvent()
+        self._trigger_contents_updated_event()
         self._updateLoadedSample()
-        self._triggerInfoChangedEvent()
+        self._trigger_info_changed_event()
 
 
 def test_hwo(hwo):
-    basket_list = hwo.getBasketList()
-    sample_list = hwo.getSampleList()
+    basket_list = hwo.get_basket_list()
+    sample_list = hwo.get_sample_list()
     print("Baskets/Samples in CATS: %s/%s" % (len(basket_list), len(sample_list)))
     gevent.sleep(2)
-    sample_list = hwo.getSampleList()
+    sample_list = hwo.get_sample_list()
 
     for s in sample_list:
-        if s.isLoaded():
-            print("Sample %s loaded" % s.getAddress())
+        if s.is_loaded():
+            print("Sample %s loaded" % s.get_address())
             break
 
-    if hwo.hasLoadedSample():
+    if hwo.has_loaded_sample():
         print(
             (
                 "Currently loaded (%s): %s"
-                % (hwo.hasLoadedSample(), hwo.getLoadedSample().getAddress())
+                % (hwo.has_loaded_sample(), hwo.get_loaded_sample().get_address())
             )
         )
     print("CATS state is: ", hwo.state)
     print("Sample on Magnet : ", hwo.cats_sample_on_diffr())
     print("All lids closed: ", hwo._chnAllLidsClosed.getValue())
 
-    print("Sample Changer State is: ", hwo.getStatus())
+    print("Sample Changer State is: ", hwo.get_status())
     for basketno in range(hwo.number_of_baskets):
         no = basketno + 1
         print("Tool for basket %d is: %d" % (no, hwo.tool_for_basket(no)))

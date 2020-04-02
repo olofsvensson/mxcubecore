@@ -50,7 +50,7 @@ class PX1CatsMaint(CatsMaint):
     def _doHomeOpen(self, unload=False):
         if unload and self.loaded:
             logging.getLogger("HWR").debug("Unloading sample first")
-            self.cats_hwo._doUnload()
+            self.cats_hwo._do_unload()
             time.sleep(3)
             while HWR.beamline.sample_changer._isDeviceBusy():
                 time.sleep(0.3)
@@ -61,6 +61,6 @@ class PX1CatsMaint(CatsMaint):
     def _doDrySoak(self):
         self._cmdDrySoak()
 
-    def _doReset(self):
-        logging.getLogger("HWR").debug("PX1CatsMaint: executing the _doReset function")
+    def _do_reset(self):
+        logging.getLogger("HWR").debug("PX1CatsMaint: executing the _do_reset function")
         self._cmdReset()
