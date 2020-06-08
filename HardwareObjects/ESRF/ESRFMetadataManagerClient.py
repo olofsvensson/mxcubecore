@@ -435,7 +435,10 @@ class MXCuBEMetadataClient(object):
                 motorPositions = str(round(position, 3))
             else:
                 motorNames += " " + motorName
-                motorPositions += " " + str(round(position, 3))
+                if position is not None:
+                    motorPositions += " " + str(round(position, 3))
+                else:
+                    motorPositions += " None"
         dictMetadata["MX_motors_name"] = motorNames
         dictMetadata["MX_motors_value"] = motorPositions
         # Detector distance
