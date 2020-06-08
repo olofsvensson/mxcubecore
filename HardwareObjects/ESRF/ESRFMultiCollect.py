@@ -475,11 +475,16 @@ class ESRFMultiCollect(AbstractMultiCollect, HardwareObject):
 
     @task
     def prepare_oscillation(
-        self, start, osc_range, exptime, number_of_images, shutterless, npass
-    ):
+        self, start, osc_range, exptime, number_of_images, shutterless, npass, first_frame
+    ):       
         if shutterless:
             end = start + osc_range * number_of_images
             exptime = (exptime + self._detector.get_deadtime()) * number_of_images
+
+            if first_frame:
+                self.do_prepare_oscillation(
+                    start, end, exptime, npass
+                )
         else:
             if osc_range < 1e-4:
                 # still image
@@ -488,15 +493,6 @@ class ESRFMultiCollect(AbstractMultiCollect, HardwareObject):
                 end = start + osc_range
 
         return start, end
-
-        # self.execute_command(
-        #     "prepare_oscillation",
-        #     start,
-        #     end,
-        #     exptime,
-        #     number_of_images,
-        #     shutterless,
-        #     npass)
 
     @task
     def no_oscillation(self, exptime):
@@ -615,7 +611,7 @@ class ESRFMultiCollect(AbstractMultiCollect, HardwareObject):
         trigger_mode=None,
     ):
         energy = self._tunable_bl.get_energy()
-        return self._detector.prepare_acquisition(
+        self._detector.prepare_acquisition(
             take_dark,
             start,
             osc_range,
@@ -626,6 +622,9 @@ class ESRFMultiCollect(AbstractMultiCollect, HardwareObject):
             energy,
             trigger_mode,
         )
+
+        self.open_fast_shutter()
+        
 
     @task
     def set_detector_filenames(
