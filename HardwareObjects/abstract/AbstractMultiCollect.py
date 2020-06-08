@@ -813,7 +813,6 @@ class AbstractMultiCollect(object):
                             str(file_path),
                             str(jpeg_full_path),
                             str(jpeg_thumbnail_full_path),
-                            wait=False
                         )
 
                         osc_start, osc_end = self.prepare_oscillation(
@@ -823,6 +822,7 @@ class AbstractMultiCollect(object):
                             wedge_size,
                             data_collect_parameters.get("shutterless", True),
                             npass,
+                            j == wedge_size
                         )
 
                         with error_cleanup(self.reset_detector):
@@ -1159,9 +1159,9 @@ class AbstractMultiCollect(object):
 
         processAnalyseParams = {}
         processAnalyseParams["EDNA_files_dir"] = EDNA_files_dir
-
+        
         try:
-            if isinstance(xds_dir, types.ListType):
+            if isinstance(xds_dir, list):
                 processAnalyseParams["collections_params"] = xds_dir
             else:
                 processAnalyseParams["datacollect_id"] = self.collection_id
