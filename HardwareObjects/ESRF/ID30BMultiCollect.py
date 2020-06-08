@@ -92,6 +92,7 @@ class ID30BMultiCollect(ESRFMultiCollect):
     def data_collection_cleanup(self):
         self.getObjectByRole("diffractometer")._wait_ready(10)
         self.close_fast_shutter()
+        self.getObjectByRole("controller").detcover.set_in(20)
 
     @task
     def oscil(self, start, end, exptime, npass, wait=True):
@@ -136,10 +137,14 @@ class ID30BMultiCollect(ESRFMultiCollect):
         )
 
     def open_fast_shutter(self):
-        self.getObjectByRole("fastshut").actuatorIn()
+        self.getObjectByRole("controller").fshut.open()
+        #self.getObjectByRole("fastshut").actuatorIn()
+        #self.getObjectByRole("fastshut").actuatorIn()
 
     def close_fast_shutter(self):
-        self.getObjectByRole("fastshut").actuatorOut()
+        self.getObjectByRole("controller").fshut.close()
+        #self.getObjectByRole("fastshut").actuatorOut()
+        #self.getObjectByRole("fastshut").actuatorOut()
 
     def set_helical(self, helical_on):
         self.helical = helical_on
