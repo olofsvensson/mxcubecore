@@ -9,7 +9,7 @@ import binascii
 
 # import threading
 from HardwareRepository.HardwareObjects.XMLRPCServer import SecureXMLRpcRequestHandler
-
+from HardwareRepository import HardwareRepository as HWR
 try:
     from httplib import HTTPConnection
 except:
