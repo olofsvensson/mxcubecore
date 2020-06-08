@@ -61,6 +61,7 @@ class TangoLimaVideo(BaseHardwareObjects.Device):
         self.__gammaExists = False
         self.__polling = None
         self._video_mode = "RGB24"
+        self._last_image = (0, 0, 0)
 
         # Dictionary containing conversion information for a given
         # video_mode. The camera video mode is the key and the first
@@ -95,6 +96,9 @@ class TangoLimaVideo(BaseHardwareObjects.Device):
 
         self.setIsReady(True)
 
+    def get_last_image(self):
+        return self._last_image
+    
     def _do_polling(self, sleep_time):
         lima_tango_device = self.device
 
@@ -103,6 +107,7 @@ class TangoLimaVideo(BaseHardwareObjects.Device):
                 lima_tango_device, self.video_mode, self._FORMATS
             )
 
+            self._last_image = data, width, heigh
             self.emit("imageReceived", data, width, height, False)
             time.sleep(sleep_time)
 
@@ -119,9 +124,12 @@ class TangoLimaVideo(BaseHardwareObjects.Device):
     def get_height(self):
         return self.device.image_height
 
-    def take_snapshot(self, path, bw):
-        data, width, height = self._get_last_image()
-        img = Image.frombytes("RGB", (width, height), data, pil_image=True)
+    def take_snapshot(self, path, bw=False):
+        data, width, height = poll_image(
+            self.device, self.video_mode, self._FORMATS
+        )
+
+        img = Image.frombytes("RGB", (width, height), data)
 
         if bw:
             img.convert("1")
