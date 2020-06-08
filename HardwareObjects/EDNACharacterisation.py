@@ -266,7 +266,7 @@ class EDNACharacterisation(AbstractCharacterisation):
         else:
             raise RuntimeError("No process directory specified in edna_input")
 
-        self.result = self.run_edna(edna_input_file, edna_results_file, path)
+        self.result = self._run_edna(edna_input_file, edna_results_file, path)
 
         return self.result
 
