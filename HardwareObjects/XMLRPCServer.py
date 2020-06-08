@@ -17,6 +17,7 @@ import json
 import atexit
 import traceback
 
+from functools import reduce
 
 from HardwareRepository.BaseHardwareObjects import HardwareObject
 from HardwareRepository import HardwareRepository as HWR
@@ -150,8 +151,7 @@ class XMLRPCServer(HardwareObject):
     def init(self):
         """
         Method inherited from HardwareObject, called by framework-2.
-        """
-
+        """        
         self.all_interfaces = self.getProperty("all_interfaces", False)
         # Listen on all interfaces if <all_interfaces>True</all_interfaces>
         # otherwise only on the interface corresponding to socket.gethostname()
@@ -210,6 +210,9 @@ class XMLRPCServer(HardwareObject):
         self._server.register_function(self.shape_history_get_grid)
         self._server.register_function(self.shape_history_set_grid_data)
         self._server.register_function(self.beamline_setup_read)
+        self._server.register_function(self.get_default_path_template)
+        self._server.register_function(self.get_default_acquisition_parameters)
+       
         self._server.register_function(self.get_diffractometer_positions)
         self._server.register_function(self.move_diffractometer)
         self._server.register_function(self.save_snapshot)
@@ -237,6 +240,7 @@ class XMLRPCServer(HardwareObject):
         self._server.register_function(self.get_back_light_level)
         self._server.register_function(self.centre_beam)
 
+
         # Register functions from modules specified in <apis> element
         if self.hasObject("apis"):
             apis = next(self.getObjects("apis"))
@@ -255,7 +259,7 @@ class XMLRPCServer(HardwareObject):
     def anneal(self, time):
         cryoshutter_hwobj = self.getObjectByRole("cryoshutter")
         try:
-            cryoshutter_hwobj.get_command_object("anneal")(time)
+            cryoshutter_hwobj.getCommandObject("anneal")(time)
         except Exception as ex:
             logging.getLogger("HWR").exception(str(ex))
             raise
@@ -441,7 +445,7 @@ class XMLRPCServer(HardwareObject):
          'angle': float}
 
         """
-        grid_dict = HWR.beamline.sample_view.get_grid()
+        grid_dict = HWR.beamline.sample_view.shapes.get_grid()
         # self.shape_history_set_grid_data(grid_dict['id'], {})
 
         return grid_dict
@@ -451,7 +455,7 @@ class XMLRPCServer(HardwareObject):
         for result in result_data.items():
             int_based_result[int(result[0])] = result[1]
 
-        HWR.beamline.sample_view.set_grid_data(key, int_based_result)
+        HWR.beamline.sample_view.shapes.set_grid_data(key, int_based_result)
         return True
 
     def get_cp(self):
@@ -459,7 +463,7 @@ class XMLRPCServer(HardwareObject):
         :returns: a json encoded list with all centred positions
         """
         cplist = []
-        points = HWR.beamline.sample_view.get_points()
+        points = HWR.beamline.sample_view.shapes.get_points()
 
         for point in points:
             cp = point.get_centred_positions()[0].as_dict()
@@ -469,15 +473,32 @@ class XMLRPCServer(HardwareObject):
 
         return json_cplist
 
+    def _getattr_from_path(self, obj, attr, delim="/"):
+        """Recurses through an attribute chain to get the attribute."""
+        return reduce(getattr, attr.split(delim), obj)
+    
     def beamline_setup_read(self, path):
-        raise NotImplementedError(
-            "There is no longer a BeamlineSetup object. Please refactor code"
-        )
-        # try:
-        #     return self.beamline_setup_hwobj.read_value(path)
-        # except Exception as ex:
-        #     logging.getLogger("HWR").exception(str(ex))
-        #     raise
+        value = None
+        
+        if path.strip("/").endswith("default-acquisition-parameters"):
+            value = self.get_default_acquisition_parameters()
+        elif path.strip("/").endswith("default-path-template"):
+            value = self.get_default_path_template().as_dict()
+        else:
+            try:
+                path = path[1:] if path[0] == "/" else path
+                ho = self._getattr_from_path(HWR, path)
+                value = ho.get_value()
+            except:
+                logging.getLogger("HWR").exception("Could no get %s " % str(path))
+
+        return value
+
+    def get_default_path_template(self):
+        return HWR.beamline.get_default_path_template()
+
+    def get_default_acquisition_parameters(self):
+        return HWR.beamline.get_default_acquisition_parameters()
 
     def workflow_set_in_progress(self, state):
         if state:
@@ -489,7 +510,7 @@ class XMLRPCServer(HardwareObject):
         return HWR.beamline.diffractometer.get_positions()
 
     def move_diffractometer(self, roles_positions_dict):
-        HWR.beamline.diffractometer.move_motors(roles_positions_dict)
+        HWR.beamline.diffractometer.moveMotors(roles_positions_dict)
         return True
 
     def save_snapshot(self, imgpath, showScale=False):
@@ -499,7 +520,7 @@ class XMLRPCServer(HardwareObject):
             if showScale:
                 HWR.beamline.diffractometer.save_snapshot(imgpath)
             else:
-                HWR.beamline.diffractometer.getObjectByRole("camera").takeSnapshot(
+                HWR.beamline.sample_view.getObjectByRole("camera").take_snapshot(
                     imgpath
                 )
         except Exception as ex:
@@ -525,19 +546,19 @@ class XMLRPCServer(HardwareObject):
         return float(flux)
 
     def set_aperture(self, pos_name, timeout=20):
-        HWR.beamline.beam.aperture.move_to_position(pos_name)
+        HWR.beamline.beam.aperture_hwobj.moveToPosition(pos_name)
         t0 = time.time()
-        while HWR.beamline.beam.aperture.get_state() == "MOVING":
+        while HWR.beamline.beam.aperture_hwobj.getState() == "MOVING":
             time.sleep(0.1)
             if time.time() - t0 > timeout:
                 raise RuntimeError("Timeout waiting for aperture to move")
         return True
 
     def get_aperture(self):
-        return HWR.beamline.beam.aperture.get_current_position_name()
+        return HWR.beamline.beam.aperture_hwobj.getCurrentPositionName()
 
     def get_aperture_list(self):
-        return HWR.beamline.beam.aperture.get_predefined_positions_list()
+        return HWR.beamline.beam.aperture_hwobj.getPredefinedPositionsList()
 
     def open_dialog(self, dict_dialog):
         """
@@ -603,7 +624,7 @@ class XMLRPCServer(HardwareObject):
         """
         Returns the zoom level.
         """
-        return HWR.beamline.diffractometer.zoomMotor.get_current_position_name()
+        return HWR.beamline.diffractometer.zoomMotor.getCurrentPositionName()
 
     def get_available_zoom_levels(self):
         """
@@ -648,8 +669,8 @@ class XMLRPCServer(HardwareObject):
 
     def _register_module_functions(self, module_name, recurse=True, prefix=""):
         log = logging.getLogger("HWR")
-        # log.info("Registering functions in module %s with XML-RPC server" % module_name)
-
+        #log.info("Registering functions in module %s with XML-RPC server" % module_name)
+        
         if module_name not in sys.modules:
             __import__(module_name)
         module = sys.modules[module_name]
@@ -679,14 +700,14 @@ class XMLRPCServer(HardwareObject):
             for f in inspect.getmembers(module, inspect.isfunction):
                 if f[0][0] != "_":
                     xmlrpc_name = prefix + f[0]
-                    # log.info(
+                    #log.info(
                     #    "Registering function %s.%s as XML-RPC function %s"
                     #    % (module_name, f[1].__name__, xmlrpc_name)
-                    # )
+                    #)
 
                     # Bind method to this XMLRPCServer instance but don't set attribute
                     # This is sufficient to register it as an xmlrpc function.
-                    bound_method = types.MethodType(f[1], self, self.__class__)
+                    bound_method = types.MethodType(f[1], self)
                     self._server.register_function(bound_method, xmlrpc_name)
 
             # TODO: Still need to test with deeply-nested modules, in particular that
