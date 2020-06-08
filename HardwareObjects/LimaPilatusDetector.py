@@ -105,7 +105,7 @@ class LimaPilatusDetector(AbstractDetector):
                 "SetImageHeader",
             )
 
-            self.get_channel_object("image_roi").connectSignal(
+            self.getChannelObject("image_roi").connectSignal(
                 "update", self.roi_mode_changed
             )
 
@@ -117,14 +117,14 @@ class LimaPilatusDetector(AbstractDetector):
     def has_shutterless(self):
         return True
 
-    def wait_ready(self, timeout=10):
-        with gevent.Timeout(timeout, RuntimeError("Detector not ready")):
+    def wait_ready(self):
+        with gevent.Timeout(3500, RuntimeError("Detector not ready")):
             while self.get_channel_value("acq_status") != "Ready":
                 time.sleep(1)
 
     def last_image_saved(self):
         try:
-            return self.get_channel_object("last_image_saved").getValue() + 1
+            return self.getChannelObject("last_image_saved").getValue() + 1
         except Exception:
             return 0
 
