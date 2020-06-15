@@ -105,7 +105,7 @@ class LimaPilatusDetector(AbstractDetector):
                 "SetImageHeader",
             )
 
-            self.getChannelObject("image_roi").connectSignal(
+            self.get_channel_object("image_roi").connectSignal(
                 "update", self.roi_mode_changed
             )
 
@@ -124,7 +124,8 @@ class LimaPilatusDetector(AbstractDetector):
 
     def last_image_saved(self):
         try:
-            return self.getChannelObject("last_image_saved").getValue() + 1
+            img = self.get_channel_object("last_image_saved").getValue() + 1
+            return img
         except Exception:
             return 0
 
@@ -191,7 +192,7 @@ class LimaPilatusDetector(AbstractDetector):
 
         self.header["Flux"] = HWR.beamline.flux.get_value()
         self.header["Beam_xy"] = "(%.2f, %.2f) pixels" % tuple(
-            [value / 0.172 for value in HWR.beamline.resolution.get_beam_centre()]
+            [value / 0.172 for value in HWR.beamline.detector.get_beam_position()]
         )
         self.header["Detector_Voffset"] = "0.0000 m"
         self.header["Energy_range"] = "(0, 0) eV"
@@ -233,6 +234,7 @@ class LimaPilatusDetector(AbstractDetector):
 
         self.set_channel_value("fill_mode", "ON")
 
+    @task
     def set_detector_filenames(
         self, frame_number, start, filename, jpeg_full_path, jpeg_thumbnail_full_path
     ):

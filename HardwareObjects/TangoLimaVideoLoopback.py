@@ -24,11 +24,9 @@ import gevent
 
 from HardwareRepository.HardwareObjects.TangoLimaVideo import TangoLimaVideo, poll_image
 
-
 def _poll_image(sleep_time, video_device, device_uri, video_mode, formats):
     from PyTango import DeviceProxy
 
-    # lima_tango_device = PyTango.DeviceProxy(device_uri, timeout=10000)
     connected = False
 
     while not connected:
@@ -41,8 +39,8 @@ def _poll_image(sleep_time, video_device, device_uri, video_mode, formats):
             logging.getLogger("HWR").info(
                 "Could not connect to %s, retrying ...", device_uri
             )
-            time.sleep(0.1)
             connected = False
+            time.sleep(0.2)
         else:
             connected = True
 
@@ -53,8 +51,55 @@ def _poll_image(sleep_time, video_device, device_uri, video_mode, formats):
         except:
             pass
         finally:
-            time.sleep(sleep_time)
+            pass #time.sleep(sleep_time)
 
+
+def start_video_stream(scale, _hash, fpath):
+    """
+    Start encoding and streaming from device video_device.
+
+    :param str device: The path to the device to stream from
+    :returns: Tupple with the two processes performing streaming and encoding
+    :rtype: tuple
+    """
+    websocket_relay_js = os.path.join(fpath, "websocket-relay.js")
+
+    FNULL = open(os.devnull, "w")
+
+    relay = subprocess.Popen(["node", websocket_relay_js, _hash, "4041", "4042"])
+
+    # Make sure that the relay is running (socket is open)
+    time.sleep(1)
+
+    #try:
+    #    scale = scale.strip()
+    #except IndexError:
+    #    scale = "-1,-1"
+    #finally:
+    scale = "%sx%s" % scale #tuple(scale.split(","))
+
+    #scale = "scale=w=%s:h=%s:force_original_aspect_ratio=decrease" % scale
+
+    ffmpeg = subprocess.Popen(
+        [
+            "ffmpeg",
+            "-f", "rawvideo",
+            "-pixel_format", "bgr24"
+            "-video_size", scale,
+            "-i", "-",
+#            "-vf", scale,
+            "-f", "mpegts",
+            "-b:v", "6000k",
+            "-q:v", "2",
+            "-an",
+            "-vcodec", "mpeg1video",
+            "http://localhost:4041/" + _hash,
+        ],
+        stderr=subprocess.STDOUT,
+        stdin=subprocess.PIPE
+    )
+
+    return relay, ffmpeg
 
 class TangoLimaVideoLoopback(TangoLimaVideo):
     def __init__(self, name):
@@ -182,6 +227,13 @@ class TangoLimaVideoLoopback(TangoLimaVideo):
                 ],
                 close_fds=True,
             )
+
+            # size = self.get_width(), self.get_height()
+            # _, self._video_stream_process = start_video_stream(
+            #     size, self.stream_hash, self._stream_script_path
+            # )
+
+            # self.video_device = self._video_stream_process.stdin
 
     def stop_video_stream_process(self):
         if self._video_stream_process:

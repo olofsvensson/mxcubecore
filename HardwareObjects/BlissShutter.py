@@ -41,20 +41,32 @@ __license__ = "LGPLv3+"
 
 
 @unique
-class ShutterStates(Enum):
+class BlissShutterStates(Enum):
     """Shutter states definitions."""
 
     OPEN = HardwareObjectState.READY, "OPEN"
     CLOSED = HardwareObjectState.READY, "CLOSED"
     MOVING = HardwareObjectState.BUSY, "MOVING"
-    DISABLED = HardwareObjectState.WARNING, "DISABLED"
+    DISABLE = HardwareObjectState.WARNING, "DISABLED"
     AUTOMATIC = HardwareObjectState.READY, "RUNNING"
+    UNKNOWN = HardwareObjectState.UNKNOWN, "RUNNING"
+
+class ShutterStates(Enum):
+    """Shutter states definitions."""
+
+    OPEN = HardwareObjectState.READY
+    CLOSED = HardwareObjectState.READY
+    MOVING = HardwareObjectState.BUSY
+    DISABLED = HardwareObjectState.WARNING
+    AUTOMATIC = HardwareObjectState.READY
+    UNKNOWN = HardwareObjectState.UNKNOWN
 
 
 class BlissShutter(AbstractShutter):
     """BLISS implementation of AbstractShutter """
 
-    SPECIFIC_STATES = ShutterStates
+    SPECIFIC_STATES = BlissShutterStates
+    VALUES = ShutterStates
 
     def __init__(self, name):
         AbstractShutter.__init__(self, name)
@@ -100,7 +112,7 @@ class BlissShutter(AbstractShutter):
     def _set_value(self, value):
         if value.name == "OPEN":
             self._bliss_obj.open()
-        elif value.name == "CLOSE":
+        elif value.name == "CLOSED":
             self._bliss_obj.close()
 
     def set_mode(self, value):

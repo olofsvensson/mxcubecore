@@ -114,6 +114,8 @@ class ExporterClient(StandardClient):
                     par = self.create_array_parameter(par)
                 cmd += str(par) + PARAMETER_SEPARATOR
 
+        print("EXPORTER COMMAND")
+        print(cmd)
         ret = self.send_receive(cmd, timeout)
         return self.__process_return(ret)
 
@@ -134,6 +136,7 @@ class ExporterClient(StandardClient):
             return None
         if ret[:4] == RET_OK:
             return ret[4:]
+
         raise ProtocolError
 
     def execute_async(self, method, pars=None):

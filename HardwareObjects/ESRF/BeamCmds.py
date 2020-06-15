@@ -1,12 +1,16 @@
+import logging
+import gevent
+
 from HardwareRepository.TaskUtils import task
 from HardwareRepository.CommandContainer import CommandObject
-import gevent
 
 
 PROCEDURE_COMMAND_T = "CONTROLLER"
 TWO_STATE_COMMAND_T = "INOUT"
 TWO_STATE_COMMAND_ACTIVE_STATES = ["in", "on", "enabled"]
 
+ARGUMENT_TYPE_LIST = "List"
+ARGUMENT_TYPE_JSON_SCHEMA = "JSONSchema"
 
 class ControllerCommand(CommandObject):
     def __init__(self, name, cmd):
@@ -14,9 +18,14 @@ class ControllerCommand(CommandObject):
         self._cmd = cmd
         self._cmd_execution = None
         self.type = PROCEDURE_COMMAND_T
+        self.argument_type = ARGUMENT_TYPE_LIST
 
     def isConnected(self):
         return True
+
+    def set_argument_json_schema(self, json_schema_str):
+        self.argument_type = ARGUMENT_TYPE_JSON_SCHEMA
+        self._arguments = json_schema_str
 
     def getArguments(self):
         if self.name() == "Anneal":
@@ -47,6 +56,26 @@ class ControllerCommand(CommandObject):
     def abort(self):
         if self._cmd_execution and not self._cmd_execution.ready():
             self._cmd_execution.kill()
+
+    def value(self):
+        return None
+
+
+class TestCommand(ControllerCommand):
+    def __init__(self, name):
+        super(TestCommand, self).__init__(name, None)
+
+    def _count(self):
+        for i in range(0, 10):
+            gevent.sleep(1)
+            print(i)
+            logging.getLogger("user_level_log").info("%s done.", i)
+
+    @task
+    def __call__(self, *args, **kwargs):
+        self.emit("commandBeginWaitReply", (str(self.name()),))
+        self._cmd_execution = gevent.spawn(self._count)
+        self._cmd_execution.link(self._cmd_done)
 
     def value(self):
         return None

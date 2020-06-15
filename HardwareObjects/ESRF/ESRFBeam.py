@@ -42,7 +42,7 @@ class ESRFBeam(AbstractBeam):
         self._aperture = None
         self._slits = {}
         self._complex = None
-        self.definer = None
+        self._definer_type = None
 
     def init(self):
         """ Initialize hardware """
@@ -55,19 +55,26 @@ class ESRFBeam(AbstractBeam):
                 _key, _val = name.split(":")
                 self._slits.update({_key: _bliss_obj.__getattribute__(_val)})
         self._complex = self.getObjectByRole("complex")
-        self.definer = self.getProperty("definer")
+        self._definer_type = self.getProperty("definer")
         beam_position = self.getProperty("beam_position")
         if beam_position:
-            self.beam_position = tuple(map(float, beam_position.split()))
+            self._beam_position_on_screen = tuple(map(float, beam_position.split()))
+
+        if self._aperture:
+            self._aperture.connect("valueChanged", self._emit_beam_info_change)
+            self._aperture.connect("stateChanged", self._emit_beam_info_change)
+
+    def _emit_beam_info_change(self, *args, **kwargs):
+        self.emit_beam_info_change()
 
     def _get_aperture_size(self):
         """ Get the size and the label of the aperture in place.
         Returns:
             (float, str): Size [mm], label.
         """
-        _size = self._aperture.get_aperture_size()
+        _size = self._aperture.get_value().value[1]
         try:
-            _label = self._aperture.get_label()
+            _label = self._aperture.get_value().value[1]
         except AttributeError:
             _label = str(_size)
 
@@ -98,8 +105,7 @@ class ESRFBeam(AbstractBeam):
         Retunrs:
             (tuple): Dictionary (width, heigth, shape, name), with types
                                (float, float, Enum, str)
-        """
-
+        """        
         _shape = BeamShape.UNKNOWN
         _beamsize_dict = {}
         if self._aperture:
@@ -142,15 +148,15 @@ class ESRFBeam(AbstractBeam):
                     complex definer {name: dimension}.
         """
         _type = "enum"
-        if self.definer in (self._aperture, "aperture"):
+        if self._definer_type in (self._aperture, "aperture"):
             # get list of the available apertures
             aperture_list = self._aperture.predefined_positions
             return {"type": [_type], "values": aperture_list}
 
-        if self.definer in (self._complex, "complex"):
+        if self._definer_type in (self._complex, "complex"):
             return {"type": [_type], "values": self._complex.size_list}
 
-        if self.definer in (self._slits, "slits"):
+        if self._definer_type in (self._slits, "slits"):
             # get the list of the slits motors range
             _low_w, _high_w = self._slits["width"].get_limits()
             _low_h, _high_h = self._slits["height"].get_limits()
@@ -205,22 +211,23 @@ class ESRFBeam(AbstractBeam):
                           Size out of the limits.
         """
 
-        if self.definer in (self._slits, "slits"):
+        if self._definer_type in (self._slits, "slits"):
             self._set_slits_size(size)
 
-        if self.definer in (self._aperture, "aperture"):
+        if self._definer_type in (self._aperture, "aperture"):
             self._set_aperture_size(size)
 
-        if self.definer in (self._complex, "complex"):
+        if self._definer_type in (self._complex, "complex"):
             self._set_complex_size(size)
 
-    def get_beam_position(self):
-        if self.beam_position == (0, 0):
+    def get_beam_position_on_screen(self):
+        if self._beam_position_on_screen == (0, 0):
             try:
-                self.beam_position = HWR.beamline.diffractometer.get_beam_position()
+                _beam_position_on_screen = HWR.beamline.diffractometer.get_beam_position()
             except AttributeError:
-                self.beam_position = (
+                _beam_position_on_screen = (
                     HWR.beamline.sample_view.camera.get_width() / 2,
                     HWR.beamline.sample_view.camera.get_height() / 2,
                 )
-        return self.beam_position
+            self._beam_position_on_screen = _beam_position_on_screen
+        return self._beam_position_on_screen

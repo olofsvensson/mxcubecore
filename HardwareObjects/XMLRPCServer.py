@@ -16,6 +16,7 @@ import time
 import json
 import atexit
 import traceback
+import jsonpickle
 
 from functools import reduce
 
@@ -445,7 +446,7 @@ class XMLRPCServer(HardwareObject):
          'angle': float}
 
         """
-        grid_dict = HWR.beamline.sample_view.shapes.get_grid()
+        grid_dict = HWR.beamline.sample_view.get_grid()
         # self.shape_history_set_grid_data(grid_dict['id'], {})
 
         return grid_dict
@@ -455,7 +456,7 @@ class XMLRPCServer(HardwareObject):
         for result in result_data.items():
             int_based_result[int(result[0])] = result[1]
 
-        HWR.beamline.sample_view.shapes.set_grid_data(key, int_based_result)
+        HWR.beamline.sample_view.set_grid_data(key, int_based_result)
         return True
 
     def get_cp(self):
@@ -463,7 +464,7 @@ class XMLRPCServer(HardwareObject):
         :returns: a json encoded list with all centred positions
         """
         cplist = []
-        points = HWR.beamline.sample_view.shapes.get_points()
+        points = HWR.beamline.sample_view.get_points()
 
         for point in points:
             cp = point.get_centred_positions()[0].as_dict()
@@ -481,9 +482,9 @@ class XMLRPCServer(HardwareObject):
         value = None
         
         if path.strip("/").endswith("default-acquisition-parameters"):
-            value = self.get_default_acquisition_parameters()
+            value = jsonpickle.encode(self.get_default_acquisition_parameters())
         elif path.strip("/").endswith("default-path-template"):
-            value = self.get_default_path_template().as_dict()
+            value = jsonpickle.encode(self.get_default_path_template())
         else:
             try:
                 path = path[1:] if path[0] == "/" else path
@@ -510,7 +511,7 @@ class XMLRPCServer(HardwareObject):
         return HWR.beamline.diffractometer.get_positions()
 
     def move_diffractometer(self, roles_positions_dict):
-        HWR.beamline.diffractometer.moveMotors(roles_positions_dict)
+        HWR.beamline.diffractometer.move_motors(roles_positions_dict)
         return True
 
     def save_snapshot(self, imgpath, showScale=False):

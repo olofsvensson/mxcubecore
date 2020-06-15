@@ -24,38 +24,44 @@ except:
     from urllib.parse import urlencode
 
 
-class FixedEnergy:
-    def __init__(self, wavelength, energy):
-        self.wavelength = wavelength
-        self.energy = energy
+# class FixedEnergy:
+#     def __init__(self, wavelength, energy):
+#         self.wavelength = wavelength
+#         self.energy = energy
 
-    def set_wavelength(self, wavelength):
-        return
+#     def set_wavelength(self, wavelength):
+#         return
 
-    def set_energy(self, energy):
-        return
+#     def set_energy(self, energy):
+#         return
 
-    def get_energy(self):
-        return self.energy
+#     def get_energy(self):
+#         return self.energy
 
-    def get_wavelength(self):
-        return self.wavelength
+#     def get_wavelength(self):
+#         return self.wavelength
 
 
-class TunableEnergy:
-    @task
-    def set_wavelength(self, wavelength):
-        return HWR.beamline.energy.set_wavelength(wavelength)
+# class TunableEnergy:
+#     @task
+#     def set_wavelength(self, wavelength):
+#         if HWR.beamline.tunable_wavelength:
+#             return HWR.beamline.energy.set_wavelength(wavelength)
+#         else:
+#             return
 
-    @task
-    def set_energy(self, energy):
-        return HWR.beamline.energy.set_value(energy)
+#     @task
+#     def set_energy(self, energy):
+#          if HWR.beamline.tunable_wavelength:
+#              return HWR.beamline.energy.set_value(energy)
+#          else:
+#              return
 
-    def get_energy(self):
-        return HWR.beamline.energy.get_energy()
+#     def get_energy(self):
+#         return HWR.beamline.energy.get_value()
 
-    def get_wavelength(self):
-        return HWR.beamline.energy.get_wavelength()
+#     def get_wavelength(self):
+#         return HWR.beamline.energy.get_wavelength()
 
 
 # class CcdDetector:
@@ -377,10 +383,9 @@ class TunableEnergy:
 
 
 class ESRFMultiCollect(AbstractMultiCollect, HardwareObject):
-    def __init__(self, name, tunable_bl):
+    def __init__(self, name  ):
         AbstractMultiCollect.__init__(self)
         HardwareObject.__init__(self, name)
-        self._tunable_bl = tunable_bl
         self._centring_status = None
         self._metadataClient = None
         self.__mesh_steps = None
@@ -454,7 +459,6 @@ class ESRFMultiCollect(AbstractMultiCollect, HardwareObject):
         )
 
         # self._detector.init(HWR.beamline.detector, self)
-        self._tunable_bl.bl_control = HWR.beamline
 
         self.emit("collectConnected", (True,))
         self.emit("collectReady", (True,))
@@ -491,6 +495,9 @@ class ESRFMultiCollect(AbstractMultiCollect, HardwareObject):
                 end = start
             else:
                 end = start + osc_range
+                self.do_prepare_oscillation(
+                    start, end, exptime, npass
+                )                
 
         return start, end
 
@@ -532,10 +539,17 @@ class ESRFMultiCollect(AbstractMultiCollect, HardwareObject):
             return self.execute_command("do_oscillation", start, end, exptime, npass)
 
     def set_wavelength(self, wavelength):
-        return self._tunable_bl.set_wavelength(wavelength)
+        if HWR.beamline.tunable_wavelength:
+            return HWR.beamline.energy.set_wavelength(wavelength)
+        else:
+            return
+        
 
     def set_energy(self, energy):
-        return self._tunable_bl.set_energy(energy)
+        if HWR.beamline.tunable_wavelength:
+            return HWR.beamline.energy.set_value(energy)
+        else:
+            return    
 
     @task
     def data_collection_cleanup(self):
@@ -578,18 +592,24 @@ class ESRFMultiCollect(AbstractMultiCollect, HardwareObject):
 
     @task
     def open_safety_shutter(self):
-        HWR.beamline.safety_shutter.openShutter()
-        while HWR.beamline.safety_shutter.getShutterState() == "closed":
-            time.sleep(0.1)
+        try:
+            HWR.beamline.safety_shutter.set_value(HWR.beamline.safety_shutter.VALUES["OPEN"], timeout=None)        
+            #while HWR.beamline.safety_shutter.get_state().name == "CLOSED":
+            #    time.sleep(0.1)
+        except RuntimeError:
+            logging.getLogger("HWR").exception("")
 
     def safety_shutter_opened(self):
-        return HWR.beamline.safety_shutter.getShutterState() == "opened"
+        return HWR.beamline.safety_shutter.get_state().name == "OPENED"
 
     @task
     def close_safety_shutter(self):
-        HWR.beamline.safety_shutter.closeShutter()
-        while HWR.beamline.safety_shutter.getShutterState() == "opened":
-            time.sleep(0.1)
+        try:
+            HWR.beamline.safety_shutter.set_value(HWR.beamline.safety_shutter.VALUES["CLOSE"])
+            #while HWR.beamline.safety_shutter.get_state().name == "OPENED":
+            #    time.sleep(0.1)
+        except RuntimeError:
+            logging.getLogger("HWR").exception("")
 
     @task
     def prepare_intensity_monitors(self):
@@ -610,7 +630,7 @@ class ESRFMultiCollect(AbstractMultiCollect, HardwareObject):
         comment="",
         trigger_mode=None,
     ):
-        energy = self._tunable_bl.get_energy()
+        energy = HWR.beamline.energy.get_value()
         self._detector.prepare_acquisition(
             take_dark,
             start,
@@ -639,7 +659,7 @@ class ESRFMultiCollect(AbstractMultiCollect, HardwareObject):
 
     @task
     def start_acquisition(self, exptime, npass, first_frame, shutterless):
-        if first_frame and shutterless:
+        if first_frame:
             return self._detector.start_acquisition()
 
     @task
@@ -791,14 +811,14 @@ class ESRFMultiCollect(AbstractMultiCollect, HardwareObject):
             os.chmod(stac_om_input_file, 0o666)
 
     def get_wavelength(self):
-        return self._tunable_bl.get_wavelength()
+        return HWR.beamline.energy.get_wavelength()
 
     def get_undulators_gaps(self):
         all_gaps = {"Unknown": None}
         _gaps = {}
 
         try:
-            _gaps = HWR.beamline.undulators.getUndulatorGaps()
+            _gaps = HWR.beamline.undulators
         except BaseException:
             logging.getLogger("HWR").exception("Could not get undulator gaps")
         all_gaps.clear()
@@ -868,7 +888,7 @@ class ESRFMultiCollect(AbstractMultiCollect, HardwareObject):
                 return T
 
     def get_current_energy(self):
-        return self._tunable_bl.get_value()
+        return HWR.beamline.energy.get_value()
 
     def get_beam_centre(self):
         return (

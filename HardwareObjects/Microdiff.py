@@ -165,7 +165,7 @@ class Microdiff(MiniDiff.MiniDiff):
             "abort",
         )
 
-        self.move_sync_motors = self.add_command(
+        self._move_sync_motors = self.add_command(
             {
                 "type": "exporter",
                 "exporter_address": self.exporter_addr,
@@ -189,8 +189,8 @@ class Microdiff(MiniDiff.MiniDiff):
         self.MOTOR_TO_EXPORTER_NAME = self.getMotorToExporterNames()
         self.move_to_coord = self.move_to_beam
 
-        self.centringVertical = self.getObjectByRole("centringVertical")
-        self.centringFocus = self.getObjectByRole("centringFocus")
+        self.centringVertical = self.getObjectByRole("sample_vertical")
+        self.centringFocus = self.getObjectByRole("x_centring")
 
         self.frontLight = self.getObjectByRole("FrontLight")
         self.backLight = self.getObjectByRole("BackLight")
@@ -248,7 +248,7 @@ class Microdiff(MiniDiff.MiniDiff):
             while not self._ready():
                 time.sleep(0.5)
 
-    def moveToPhase(self, phase, wait=False, timeout=None):
+    def set_phase(self, phase, wait=False, timeout=None):
         if self._ready():
             if phase in self.phases:
                 self.movePhase(phase)
@@ -259,8 +259,11 @@ class Microdiff(MiniDiff.MiniDiff):
         else:
             print("moveToPhase - Ready is: ", self._ready())
 
-    def getPhase(self):
+    def get_current_phase(self):
         return self.readPhase.get_value()
+
+    def get_phase_list(self):
+        return list(self.phases.keys())
 
     def move_sync_motors(self, motors_dict, wait=False, timeout=None):
         in_kappa_mode = self.in_kappa_mode()
@@ -279,7 +282,7 @@ class Microdiff(MiniDiff.MiniDiff):
         if not argin:
             return
 
-        self.move_sync_motors(argin)
+        self._move_sync_motors(argin)
 
         if wait:
             time.sleep(0.1)
@@ -362,7 +365,9 @@ class Microdiff(MiniDiff.MiniDiff):
         self.scan_exposure_time.set_value(exptime / mesh_num_lines)
         self.scan_start_angle.set_value(start)
         self.scan_detector_gate_pulse_enabled.set_value(True)
-        servo_time = 0.110  # adding the servo time to the readout time to avoid any servo cycle jitter
+        servo_time = (
+            0.110
+        )  # adding the servo time to the readout time to avoid any servo cycle jitter
         self.scan_detector_gate_pulse_readout_time.set_value(
             dead_time * 1000 + servo_time
         )  # TODO

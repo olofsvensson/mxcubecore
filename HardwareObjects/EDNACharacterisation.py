@@ -244,6 +244,7 @@ class EDNACharacterisation(AbstractCharacterisation):
         Returns:
             (str) The Characterisation result
         """
+        self.processing_done_event.set()
         self.prepare_input(edna_input)
         path = edna_input.process_directory
 
@@ -268,6 +269,7 @@ class EDNACharacterisation(AbstractCharacterisation):
 
         self.result = self._run_edna(edna_input_file, edna_results_file, path)
 
+        self.processing_done_event.clear()
         return self.result
 
     def dc_from_output(self, edna_result, reference_image_collection):

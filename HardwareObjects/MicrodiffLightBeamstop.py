@@ -24,14 +24,14 @@ class MicrodiffLightBeamstop(ExporterNState):
     """Control backlight, move the beamstop to safety position"""
 
     def __init__(self, name):
-        super(MicrodiffLightBeamstop, self).__init__(self, name)
+        super(MicrodiffLightBeamstop, self).__init__(name)
         self.safety_position = None
         self._beamstop_obj = None
         self._saved_value = None
 
     def init(self):
         """Initialize the light and the beamstop object"""
-        super(MicrodiffLightBeamstop, self).init(self)
+        super(MicrodiffLightBeamstop, self).init()
 
         # for now the beamstop only moves in X directiron.
         self._beamstop_obj = self.getObjectByRole("beamstop")

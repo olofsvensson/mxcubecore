@@ -825,7 +825,7 @@ class MiniDiff(Equipment):
         beam_pos_x, beam_pos_y = HWR.beamline.beam.get_beam_position_on_screen()
 
         self.current_centring_procedure = sample_centring.start_auto(
-            self.camera,
+            HWR.beamline.sample_view.camera,
             {
                 "phi": self.centringPhi,
                 "phiy": self.centringPhiy,
