@@ -343,7 +343,9 @@ class Microdiff(MiniDiff.MiniDiff):
             },
             "startScan4DEx",
         )
+        
         scan(scan_params)
+    
         print("helical scan started at ----------->", time.time())
         if wait:
             self._wait_ready(900)  # timeout of 15 min
@@ -361,16 +363,16 @@ class Microdiff(MiniDiff.MiniDiff):
         mesh_range,
         wait=False,
     ):
-        self.scan_range.set_value(end - start)
-        self.scan_exposure_time.set_value(exptime / mesh_num_lines)
         self.scan_start_angle.set_value(start)
         self.scan_detector_gate_pulse_enabled.set_value(True)
-        servo_time = (
-            0.110
-        )  # adding the servo time to the readout time to avoid any servo cycle jitter
+
+        # Adding the servo time to the readout time to avoid any
+        # servo cycle jitter
+        servo_time = 0.110
+
         self.scan_detector_gate_pulse_readout_time.set_value(
             dead_time * 1000 + servo_time
-        )  # TODO
+        )
 
         # Prepositionning at the center of the grid
         self.move_motors(mesh_center.as_dict())
@@ -381,26 +383,48 @@ class Microdiff(MiniDiff.MiniDiff):
             -(mesh_range["horizontal_range"]) / 2, timeout=None
         )
 
-        scan_params = "%0.3f\t" % -mesh_range["horizontal_range"]
-        scan_params += "%0.3f\t" % mesh_range["vertical_range"]
-        scan_params += "%d\t" % mesh_num_lines
-        scan_params += "%d\t" % (mesh_total_nb_frames / mesh_num_lines)
-        # scan_params += "%d\t" % 1
-        scan_params += "%r" % True  # TODO
+        # params = "%0.3f\t" % -mesh_range["horizontal_range"]
+        # params += "%0.3f\t" % mesh_range["vertical_range"]
+        # params += "%d\t" % mesh_num_lines
+        # params += "%d\t" % (mesh_total_nb_frames / mesh_num_lines)
+        # # # scan_params += "%d\t" % 1
+        # params += "%r\t" % True
+        # params += "%r\t" % True
+        # params += "%r" % True
 
+        positions = self.get_positions()
+
+        params = "%0.3f\t" % (end - start)
+        params += "%0.3f\t" % mesh_range["vertical_range"]
+        params += "%0.3f\t" % (-mesh_range["horizontal_range"])
+        params += "%0.3f\t" % start
+        params += "%0.3f\t" % positions["phiz"]
+        params += "%0.3f\t" % positions["phiy"]
+        params += "%0.3f\t" % positions["sampx"]
+        params += "%0.3f\t" % positions["sampy"]
+        params += "%d\t" % mesh_num_lines
+        params += "%d\t" % (mesh_total_nb_frames / mesh_num_lines)
+        params += "%0.3f\t" % (exptime / mesh_num_lines)
+        params += "%r\t" % True
+        params += "%r\t" % True
+        params += "%r\t" % True
+        
         scan = self.add_command(
             {
                 "type": "exporter",
                 "exporter_address": self.exporter_addr,
                 "name": "start_raster_scan",
             },
-            "startRasterScan",
+            "startRasterScanEx",
         )
-        scan(scan_params)
-        print("mesh scan started at ----------->", time.time())
+
+        self._wait_ready(900)  # timeout of 15 min
+
+        scan(params)
+      
         if wait:
-            self._wait_ready(1800)  # timeout of 30 min
-            print("finished at ---------->", time.time())
+            # timeout of 30 min
+            self._wait_ready(1800)
 
     def stillScan(self, pulse_duration, pulse_period, pulse_nb, wait=False):
         scan_params = "%0.6f\t%0.6f\t%d" % (pulse_duration, pulse_period, pulse_nb)
