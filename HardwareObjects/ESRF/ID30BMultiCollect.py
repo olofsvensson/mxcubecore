@@ -101,9 +101,7 @@ class ID30BMultiCollect(ESRFMultiCollect):
             diffr.oscilScan4d(start, end, exptime, self.helical_pos, wait=True)
         elif self.mesh:
             det = HWR.beamline.detector
-            latency_time = (
-                det.getProperty("latecy_time_mesh") or det.get_deadtime()
-            )
+            latency_time = det.getProperty("latecy_time_mesh") or det.get_deadtime()
             diffr.oscilScanMesh(
                 start,
                 end,
@@ -135,10 +133,14 @@ class ID30BMultiCollect(ESRFMultiCollect):
         )
 
     def open_fast_shutter(self):
-        self.getObjectByRole("fastshut").set_value(self.getObjectByRole("fastshut").VALUES.OPEN)
+        self.getObjectByRole("fastshut").set_value(
+            self.getObjectByRole("fastshut").VALUES.OPEN
+        )
 
     def close_fast_shutter(self):
-        self.getObjectByRole("fastshut").set_value(self.getObjectByRole("fastshut").VALUES.CLOSED)
+        self.getObjectByRole("fastshut").set_value(
+            self.getObjectByRole("fastshut").VALUES.CLOSED
+        )
 
     def set_helical(self, helical_on):
         self.helical = helical_on
@@ -188,7 +190,7 @@ class ID30BMultiCollect(ESRFMultiCollect):
                     if os.path.exists(dest):
                         continue
                     shutil.copyfile(
-                        os.path.join("/data/id30b/inhouse/opid30b/", filename), dest
+                        os.path.join(self.getProperty(template_file_directory), filename), dest
                     )
         except BaseException:
             logging.exception("Exception happened while copying geo_corr files")
