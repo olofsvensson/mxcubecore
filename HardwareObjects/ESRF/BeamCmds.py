@@ -86,6 +86,7 @@ class HWObjActuatorCommand(CommandObject):
         CommandObject.__init__(self, name)
         self._hwobj = hwobj
         self.type = TWO_STATE_COMMAND_T
+        self.argument_type = ARGUMENT_TYPE_LIST
 
     def isConnected(self):
         return True
