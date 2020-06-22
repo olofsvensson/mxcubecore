@@ -34,6 +34,13 @@ def _poll_image(sleep_time, video_device, device_uri, video_mode, formats):
             logging.getLogger("HWR").info("Connecting to %s", device_uri)
             lima_tango_device = DeviceProxy(device_uri)
             lima_tango_device.ping()
+
+            if lima_tango_device.video_live:
+                lima_tango_device.video_live = False
+
+            lima_tango_device.video_mode = video_mode
+            lima_tango_device.video_live = True
+
         except Exception as ex:
             logging.getLogger("HWR").exception("")
             logging.getLogger("HWR").info(
@@ -47,11 +54,14 @@ def _poll_image(sleep_time, video_device, device_uri, video_mode, formats):
     while True:
         try:
             data = poll_image(lima_tango_device, video_mode, formats)[0]
+            time.sleep(1)
             video_device.write(data)
-        except:
-            pass
+
+        except Exception as ex:
+            print(ex)
         finally:
-            pass #time.sleep(sleep_time)
+            pass
+            #time.sleep(sleep_time)
 
 
 def start_video_stream(scale, _hash, fpath):
@@ -62,14 +72,14 @@ def start_video_stream(scale, _hash, fpath):
     :returns: Tupple with the two processes performing streaming and encoding
     :rtype: tuple
     """
-    websocket_relay_js = os.path.join(fpath, "websocket-relay.js")
+    websocket_relay_js = os.path.join(os.path.dirname(fpath), "websocket-relay.js")
 
     FNULL = open(os.devnull, "w")
 
     relay = subprocess.Popen(["node", websocket_relay_js, _hash, "4041", "4042"])
 
     # Make sure that the relay is running (socket is open)
-    time.sleep(1)
+    time.sleep(2)
 
     #try:
     #    scale = scale.strip()
@@ -84,7 +94,7 @@ def start_video_stream(scale, _hash, fpath):
         [
             "ffmpeg",
             "-f", "rawvideo",
-            "-pixel_format", "bgr24"
+            "-pixel_format", "rgb24"
             "-video_size", scale,
             "-i", "-",
 #            "-vf", scale,
@@ -96,7 +106,8 @@ def start_video_stream(scale, _hash, fpath):
             "http://localhost:4041/" + _hash,
         ],
         stderr=subprocess.STDOUT,
-        stdin=subprocess.PIPE
+        stdin=subprocess.PIPE,
+#        shell=False
     )
 
     return relay, ffmpeg
@@ -111,7 +122,7 @@ class TangoLimaVideoLoopback(TangoLimaVideo):
         self._stream_script_path = ""
         self.stream_hash = str(uuid.uuid1())
         self.video_device = None
-        self._polling_mode = "process"
+        self._polling_mode = None #"process"
         self._p = None
 
     def init(self):
@@ -217,6 +228,7 @@ class TangoLimaVideoLoopback(TangoLimaVideo):
             python_executable = os.sep.join(
                 os.path.dirname(os.__file__).split(os.sep)[:-2] + ["bin", "python"]
             )
+            
             self._video_stream_process = subprocess.Popen(
                 [
                     python_executable,
@@ -228,12 +240,11 @@ class TangoLimaVideoLoopback(TangoLimaVideo):
                 close_fds=True,
             )
 
-            # size = self.get_width(), self.get_height()
-            # _, self._video_stream_process = start_video_stream(
-            #     size, self.stream_hash, self._stream_script_path
-            # )
-
-            # self.video_device = self._video_stream_process.stdin
+            #size = self.get_width(), self.get_height()
+            #self._video_stream_process = start_video_stream(
+            #    size, self.stream_hash, self._stream_script_path
+            #)
+            #self.video_device = self._video_stream_process.stdin
 
     def stop_video_stream_process(self):
         if self._video_stream_process:
@@ -253,7 +264,7 @@ class TangoLimaVideoLoopback(TangoLimaVideo):
         self.set_stream_size(w, h)
         self._set_stream_original_size(w, h)
         self.start_video_stream_process()
-
+        
         self._do_polling(self.device.video_exposure)
 
         return self.video_device
