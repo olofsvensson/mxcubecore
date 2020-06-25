@@ -28,6 +28,8 @@ Example xml file:
 """
 
 import sys
+import math
+
 from gevent import Timeout, sleep
 from HardwareRepository.HardwareObjects.abstract.AbstractMotor import AbstractMotor
 from HardwareRepository.Command.Exporter import Exporter
@@ -167,7 +169,13 @@ class ExporterMotor(AbstractMotor):
         Returns:
             (float): Motor position.
         """
-        self._nominal_value = self.motor_position.get_value()
+        _v = self.motor_position.get_value()
+
+        if math.isnan(_v):
+            _v = 0
+
+        self._nominal_value = _v
+
         return self._nominal_value
 
     def __get_limits(self, cmd):
