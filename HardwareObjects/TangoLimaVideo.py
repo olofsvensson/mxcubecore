@@ -130,7 +130,7 @@ class TangoLimaVideo(BaseHardwareObjects.Device):
     def get_height(self):
         return self.device.image_height
 
-    def take_snapshot(self, path, bw=False):
+    def take_snapshot(self, path=None, bw=False):
         data, width, height = poll_image(
             self.device, self.video_mode, self._FORMATS
         )
@@ -140,7 +140,10 @@ class TangoLimaVideo(BaseHardwareObjects.Device):
         if bw:
             img.convert("1")
 
-        img.save(path)
+        if path:
+            img.save(path)
+
+        return img
 
     def set_live(self, mode):
         curr_state = self.device.video_live
