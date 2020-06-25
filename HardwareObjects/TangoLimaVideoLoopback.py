@@ -35,12 +35,6 @@ def _poll_image(sleep_time, video_device, device_uri, video_mode, formats):
             lima_tango_device = DeviceProxy(device_uri)
             lima_tango_device.ping()
 
-            if lima_tango_device.video_live:
-                lima_tango_device.video_live = False
-
-            lima_tango_device.video_mode = video_mode
-            lima_tango_device.video_live = True
-
         except Exception as ex:
             logging.getLogger("HWR").exception("")
             logging.getLogger("HWR").info(
@@ -54,9 +48,7 @@ def _poll_image(sleep_time, video_device, device_uri, video_mode, formats):
     while True:
         try:
             data = poll_image(lima_tango_device, video_mode, formats)[0]
-            time.sleep(1)
             video_device.write(data)
-
         except Exception as ex:
             print(ex)
         finally:

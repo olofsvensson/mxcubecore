@@ -88,11 +88,17 @@ class TangoLimaVideo(BaseHardwareObjects.Device):
 
             self.device = BaseHardwareObjects.Null()
         else:
+            if self.device.video_live:
+                self.device.video_live = False
+
             self.device.video_mode = self._video_mode
+            
             if self.getProperty("exposure_time"):
                 self.set_exposure(float(self.getProperty("exposure_time")))
             else:
                 self.set_exposure(self.getProperty("interval") / 1000.0)
+
+            self.device.video_live = True
 
         self.setIsReady(True)
 
