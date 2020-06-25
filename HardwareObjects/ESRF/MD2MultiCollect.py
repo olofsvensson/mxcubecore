@@ -10,7 +10,7 @@ from HardwareRepository.HardwareObjects.LimaPilatusDetector import LimaPilatusDe
 from HardwareRepository import HardwareRepository as HWR
 
 
-class ID30BMultiCollect(ESRFMultiCollect):
+class MD2MultiCollect(ESRFMultiCollect):
     def __init__(self, name):
         ESRFMultiCollect.__init__(self, name)
 
