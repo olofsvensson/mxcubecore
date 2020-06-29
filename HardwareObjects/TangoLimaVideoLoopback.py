@@ -24,11 +24,10 @@ import gevent
 
 from HardwareRepository.HardwareObjects.TangoLimaVideo import TangoLimaVideo, poll_image
 
-def _poll_image(sleep_time, video_device, device_uri, video_mode, formats):
+def _poll_image(sleep_time, video_device, device_uri, video_mode, formats):   
     from PyTango import DeviceProxy
 
     connected = False
-
     while not connected:
         try:
             logging.getLogger("HWR").info("Connecting to %s", device_uri)
@@ -52,9 +51,7 @@ def _poll_image(sleep_time, video_device, device_uri, video_mode, formats):
         except Exception as ex:
             print(ex)
         finally:
-            pass
-            #time.sleep(sleep_time)
-
+            time.sleep(sleep_time/2)
 
 def start_video_stream(scale, _hash, fpath):
     """
@@ -73,23 +70,15 @@ def start_video_stream(scale, _hash, fpath):
     # Make sure that the relay is running (socket is open)
     time.sleep(2)
 
-    #try:
-    #    scale = scale.strip()
-    #except IndexError:
-    #    scale = "-1,-1"
-    #finally:
     scale = "%sx%s" % scale #tuple(scale.split(","))
-
-    #scale = "scale=w=%s:h=%s:force_original_aspect_ratio=decrease" % scale
 
     ffmpeg = subprocess.Popen(
         [
             "ffmpeg",
             "-f", "rawvideo",
-            "-pixel_format", "rgb24"
-            "-video_size", scale,
+            "-pixel_format", "rgb24",
+            "-s", scale,
             "-i", "-",
-#            "-vf", scale,
             "-f", "mpegts",
             "-b:v", "6000k",
             "-q:v", "2",
@@ -97,9 +86,9 @@ def start_video_stream(scale, _hash, fpath):
             "-vcodec", "mpeg1video",
             "http://localhost:4041/" + _hash,
         ],
-        stderr=subprocess.STDOUT,
+        stderr=FNULL,
         stdin=subprocess.PIPE,
-#        shell=False
+        shell=False
     )
 
     return relay, ffmpeg
@@ -114,12 +103,12 @@ class TangoLimaVideoLoopback(TangoLimaVideo):
         self._stream_script_path = ""
         self.stream_hash = str(uuid.uuid1())
         self.video_device = None
-        self._polling_mode = None #"process"
+        self._polling_mode = "gevent"
         self._p = None
 
     def init(self):
         super(TangoLimaVideoLoopback, self).init()
-        self._polling_mode = self.getProperty("polling_mode", "process")
+        self._polling_mode = self.getProperty("polling_mode", "gevent")
 
     def _do_polling(self, sleep_time):
         if self._polling_mode == "process":
@@ -221,22 +210,22 @@ class TangoLimaVideoLoopback(TangoLimaVideo):
                 os.path.dirname(os.__file__).split(os.sep)[:-2] + ["bin", "python"]
             )
             
-            self._video_stream_process = subprocess.Popen(
-                [
-                    python_executable,
-                    self._stream_script_path,
-                    self.video_device.name,
-                    self._current_stream_size,
-                    self.stream_hash,
-                ],
-                close_fds=True,
-            )
+            # self._video_stream_process = subprocess.Popen(
+            #     [
+            #         python_executable,
+            #         self._stream_script_path,
+            #         self.video_device.name,
+            #         self._current_stream_size,
+            #         self.stream_hash,
+            #     ],
+            #     close_fds=True,
+            # )
 
-            #size = self.get_width(), self.get_height()
-            #self._video_stream_process = start_video_stream(
-            #    size, self.stream_hash, self._stream_script_path
-            #)
-            #self.video_device = self._video_stream_process.stdin
+            size = self.get_width(), self.get_height()
+            self._video_stream_process = start_video_stream(
+                size, self.stream_hash, self._stream_script_path
+            )[1]
+            self.video_device = self._video_stream_process.stdin
 
     def stop_video_stream_process(self):
         if self._video_stream_process:
@@ -251,7 +240,7 @@ class TangoLimaVideoLoopback(TangoLimaVideo):
         w, h = self.get_width(), self.get_height()
 
         self._open_video_device(loopback_device_path)
-        self._initialize_video_device(v4l2.V4L2_PIX_FMT_RGB24, w, h, 3)
+        #self._initialize_video_device(v4l2.V4L2_PIX_FMT_RGB24, w, h, 3)
 
         self.set_stream_size(w, h)
         self._set_stream_original_size(w, h)
