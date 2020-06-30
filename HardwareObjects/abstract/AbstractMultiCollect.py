@@ -1121,7 +1121,7 @@ class AbstractMultiCollect(object):
         return self.data_collect_task
 
     # TODO: rename to stop_collect
-    def stopCollect(self, owner):
+    def stop_collect(self, owner=None):
         if self.data_collect_task is not None:
             self.data_collect_task.kill(block=False)
 
