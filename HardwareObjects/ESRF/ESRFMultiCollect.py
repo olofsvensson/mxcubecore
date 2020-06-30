@@ -427,7 +427,7 @@ class ESRFMultiCollect(AbstractMultiCollect, HardwareObject):
 
         try:
             undulators = self["undulator"]
-        except IndexError:
+        except KeyError:
             undulators = []
 
         beam_div_hor, beam_div_ver = HWR.beamline.beam.get_beam_divergence()
