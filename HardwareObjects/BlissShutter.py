@@ -50,6 +50,7 @@ class BlissShutterStates(Enum):
     DISABLE = HardwareObjectState.WARNING, "DISABLED"
     AUTOMATIC = HardwareObjectState.READY, "RUNNING"
     UNKNOWN = HardwareObjectState.UNKNOWN, "RUNNING"
+    FAULT = HardwareObjectState.WARNING, "FAULT"
 
 class ShutterStates(Enum):
     """Shutter states definitions."""
