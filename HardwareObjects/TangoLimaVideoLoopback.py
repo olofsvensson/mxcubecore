@@ -51,7 +51,7 @@ def _poll_image(sleep_time, video_device, device_uri, video_mode, formats):
         except Exception as ex:
             print(ex)
         finally:
-            time.sleep(sleep_time/2)
+            time.sleep(sleep_time)
 
 def start_video_stream(scale, _hash, fpath):
     """
@@ -65,7 +65,10 @@ def start_video_stream(scale, _hash, fpath):
 
     FNULL = open(os.devnull, "w")
 
-    relay = subprocess.Popen(["node", websocket_relay_js, _hash, "4041", "4042"])
+    relay = subprocess.Popen(
+        ["node", websocket_relay_js, _hash, "4041", "4042"],
+        close_fds=True
+    )
 
     # Make sure that the relay is running (socket is open)
     time.sleep(2)
@@ -81,14 +84,15 @@ def start_video_stream(scale, _hash, fpath):
             "-i", "-",
             "-f", "mpegts",
             "-b:v", "6000k",
-            "-q:v", "2",
+            "-q:v", "4",
             "-an",
             "-vcodec", "mpeg1video",
             "http://localhost:4041/" + _hash,
         ],
         stderr=FNULL,
         stdin=subprocess.PIPE,
-        shell=False
+        shell=False,
+        close_fds=True
     )
 
     return relay, ffmpeg
