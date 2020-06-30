@@ -160,8 +160,13 @@ class MiniDiff(Equipment):
 
         try:
             phiz_ref = self["centringReferencePosition"].getProperty("phiz")
-        except BaseException:
+        except:
             phiz_ref = None
+
+        try:
+            phiy_ref = self["centringReferencePosition"].getProperty("phiy")
+        except:
+            phiy_ref = None
 
         self.phiMotor = self.getObjectByRole("phi")
         self.phizMotor = self.getObjectByRole("phiz")
@@ -181,7 +186,9 @@ class MiniDiff(Equipment):
         self.centringPhiz = sample_centring.CentringMotor(
             self.phizMotor, reference_position=phiz_ref
         )
-        self.centringPhiy = sample_centring.CentringMotor(self.phiyMotor)
+        self.centringPhiy = sample_centring.CentringMotor(
+            self.phiyMotor, reference_position=phiy_ref
+        )
         self.centringSamplex = sample_centring.CentringMotor(self.sampleXMotor)
         self.centringSampley = sample_centring.CentringMotor(self.sampleYMotor)
 

@@ -479,7 +479,7 @@ class Microdiff(MiniDiff.MiniDiff):
             MiniDiff.MiniDiff.move_to_beam(self, x, y)
         else:
             try:
-                beam_pos_x, beam_pos_y = HWR.beamline.beam.get_screen_position()
+                beam_pos_x, beam_pos_y = HWR.beamline.beam.get_beam_position_on_screen()
 
                 self.centringVertical.set_value_relative(
                     self.centringPhiz.direction
@@ -540,7 +540,7 @@ class Microdiff(MiniDiff.MiniDiff):
                 self.pixelsPerMmY,
                 self.pixelsPerMmZ,
                 beam_pos_x,
-                beam_pos_x,
+                beam_pos_y,
                 chi_angle=self.chiAngle,
             )
 
