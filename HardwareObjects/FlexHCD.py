@@ -213,7 +213,7 @@ class FlexHCD(SampleChanger):
 
         res = self.robot.get_result(cmd_id)
         if res:
-            res = pickle.loads(base64.decodestring(res))
+            res = pickle.loads(base64.b64decode(res))
             if isinstance(res, Exception):
                 raise res
             else:
