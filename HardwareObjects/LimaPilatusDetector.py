@@ -14,6 +14,8 @@ from HardwareRepository.HardwareObjects.abstract.AbstractDetector import (
     AbstractDetector,
 )
 
+from HardwareRepository.BaseHardwareObjects import HardwareObjectState
+
 
 class LimaPilatusDetector(AbstractDetector):
     def __init__(self, name):
@@ -110,6 +112,7 @@ class LimaPilatusDetector(AbstractDetector):
             )
 
         except ConnectionError:
+            self.update_state(HardwareObjectState.FAULT)
             logging.getLogger("HWR").error(
                 "Could not connect to detector %s" % lima_device
             )
@@ -284,6 +287,8 @@ class LimaPilatusDetector(AbstractDetector):
             HWR.beamline.collect.getObjectByRole("detector_cover").set_out()
         except Exception:
             pass
+
+        self.wait_ready()
 
         self.execute_command("prepare_acq")
         return self.execute_command("start_acq")
