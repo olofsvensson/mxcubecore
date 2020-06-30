@@ -184,6 +184,15 @@ class Microdiff(MiniDiff.MiniDiff):
             "BeamPositionVertical",
         )
 
+        self.save_centring_positions = self.add_command(
+            {
+                "type": "exporter",
+                "exporter_address": self.exporter_addr,
+                "name": "abort",
+            },
+            "saveCentringPositions",
+        )        
+
         MiniDiff.MiniDiff.init(self)
         self.centringPhiy.direction = -1
         self.MOTOR_TO_EXPORTER_NAME = self.getMotorToExporterNames()
@@ -220,7 +229,7 @@ class Microdiff(MiniDiff.MiniDiff):
         self._wait_ready(10)
 
         # save position in MD2 software
-        # self.get_command_object("save_centring_positions")()
+        self.save_centring_positions()
 
         # do normal stuff
         return MiniDiff.MiniDiff.emitCentringSuccessful(self)

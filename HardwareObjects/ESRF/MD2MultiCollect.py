@@ -62,7 +62,7 @@ class MD2MultiCollect(ESRFMultiCollect):
                 number_of_snapshots = 1
         else:
             # this has to be done before each chage of phase
-            HWR.beamline.diffractometer.get_command_object("save_centring_positions")()
+            HWR.beamline.diffractometer.save_centring_positions()
             # not going to centring phase if in plate mode (too long)
             HWR.beamline.diffractometer.set_phase("Centring", wait=True, timeout=200)
 
