@@ -4,7 +4,7 @@ from HardwareRepository.BaseHardwareObjects import HardwareObjectState
 from bliss.common import event
 
 
-class ID232BeamDefiner(HardwareObject, AbstractNState):
+class ID232BeamDefiner(AbstractNState):
     READY = HardwareObjectState.READY
 
     def __init__(self, *args):
