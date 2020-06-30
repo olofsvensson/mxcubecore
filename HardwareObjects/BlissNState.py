@@ -52,21 +52,22 @@ class BlissNState(AbstractNState):
 
     def init(self):
         """Initialise the device"""
+
         AbstractNState.init(self)
         _name = self.getProperty("object_name")
         self._bliss_obj = getattr(self.getObjectByRole("controller"), _name)
 
         self.device_type = "actuator"
-        if "MultiplePositions" in self._bliss_obj.__class__:
-            self.device_type = "motor"
+        #if "MultiplePositions" in self._bliss_obj.__class__:
+        #    self.device_type = "motor"
 
         if self.device_type == "actuator":
-            self.connect(self.bliss_obj, "state", self.update_value)
-            self.connect(self.bliss_obj, "state", self.update_state)
+            self.connect(self._bliss_obj, "state", self.update_value)
+            self.connect(self._bliss_obj, "state", self.update_state)
             self.__saved_state = self.get_value()
         elif self.device_type == "motor":
-            self.connect(self.bliss_obj, "position", self.update_value)
-            self.connect(self.bliss_obj, "state", self._update_state_motor)
+            self.connect(self._bliss_obj, "position", self.update_value)
+            self.connect(self._bliss_obj, "state", self._update_state_motor)
 
     def get_value(self):
         """Get the device value
