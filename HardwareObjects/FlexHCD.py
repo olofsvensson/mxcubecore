@@ -146,8 +146,9 @@ class FlexHCD(SampleChanger):
         }
 
         SampleChanger.init(self)
-        self._set_state(SampleChangerState.Disabled)
+        #self._set_state(SampleChangerState.Disabled)
         self._update_selection()
+        self.state = self._read_state()
 
     @task
     def prepare_load(self):
@@ -255,8 +256,9 @@ class FlexHCD(SampleChanger):
         return ret
 
     def _assert_ready(self):
-        if not self._ready():
-            raise RuntimeError("Sample changer is busy cant mount/unmount")
+        if self.exporter_addr:
+            if not self._ready():
+                raise RuntimeError("Sample changer is busy cant mount/unmount")
     
     def _ready(self):
         return self.swstate_attr.get_value() == "Ready"
@@ -323,7 +325,7 @@ class FlexHCD(SampleChanger):
                 [sample.get_cell_no(), sample.get_basket_no(), sample.get_vial_no()],
             )
 
-        gevent.sleep(15)
+        gevent.sleep(10)
 
         err_msg = "Timeout waiting for sample changer to be in safe position"
         while not unload_load_task.ready():
@@ -341,7 +343,7 @@ class FlexHCD(SampleChanger):
                     return True
             else:
                 loading_state = str(
-                    self._execute_cmd("sampleStatus", "LoadSampleStatus")
+                    self._execute_cmd("get_robot_cache_variable", "LoadSampleStatus")
                 )
                 if "on_gonio" in loading_state:
                     self._set_loaded_sample(sample)
@@ -354,7 +356,7 @@ class FlexHCD(SampleChanger):
                         ):
                             gevent.sleep(0.5)
                     return True
-            gevent.sleep(1)
+            gevent.sleep(2)
 
         logging.getLogger("HWR").info("unload load task done")
         for msg in self.get_robot_exceptions():
@@ -510,8 +512,7 @@ class FlexHCD(SampleChanger):
                 sample.get_vial_no(),
             )
 
-        gevent.sleep(5)
-
+        gevent.sleep(10)
         err_msg = "Timeout waiting for sample changer to be in safe position"
         while not load_task.ready():
             if self.exporter_addr:
@@ -529,21 +530,16 @@ class FlexHCD(SampleChanger):
                     return True
             else:
                 loading_state = str(
-                    self._execute_cmd("sampleStatus", "LoadSampleStatus")
+                    self._execute_cmd("get_robot_cache_variable",
+                                      "LoadSampleStatus")
                 )
                 if "on_gonio" in loading_state:
                     self._set_loaded_sample(sample)
                     with gevent.Timeout(20, RuntimeError(err_msg)):
-                        while (
-                            not self._execute_cmd(
-                                "get_robot_cache_variable", "data:dioRobotIsSafe"
-                            )
-                            == "true"
-                        ):
+                        while (not self._execute_cmd("get_robot_cache_variable", "data:dioRobotIsSafe")  == "true"):
                             gevent.sleep(0.5)
                     return True
-
-            gevent.sleep(1)
+            gevent.sleep(2)
 
         if self.exporter_addr:
             loaded_sample = self._execute_cmd_exporter(
@@ -578,7 +574,7 @@ class FlexHCD(SampleChanger):
             )
         else:
             self._execute_cmd(
-                "unload_sample",
+                "unloadSample",
                 sample.get_cell_no(),
                 sample.get_basket_no(),
                 sample.get_vial_no(),
