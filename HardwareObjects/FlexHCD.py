@@ -619,10 +619,11 @@ class FlexHCD(SampleChanger):
     def _update_state(self):
         # see if the command exists for exporter
         if not self.exporter_addr:
-            defreezing = self._execute_cmd("isDefreezing")
+            pass
+            #defreezing = self._execute_cmd("isDefreezing")
             
-            if defreezing:
-                self._set_state(SampleChangerState.Moving)
+            #if defreezing:
+            #    self._set_state(SampleChangerState.Moving)
 
         try:
             state = self._read_state()
