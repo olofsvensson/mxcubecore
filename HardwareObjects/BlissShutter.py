@@ -47,27 +47,16 @@ class BlissShutterStates(Enum):
     OPEN = HardwareObjectState.READY, "OPEN"
     CLOSED = HardwareObjectState.READY, "CLOSED"
     MOVING = HardwareObjectState.BUSY, "MOVING"
-    DISABLE = HardwareObjectState.WARNING, "DISABLED"
+    DISABLED = HardwareObjectState.WARNING, "DISABLED"
     AUTOMATIC = HardwareObjectState.READY, "RUNNING"
     UNKNOWN = HardwareObjectState.UNKNOWN, "RUNNING"
     FAULT = HardwareObjectState.WARNING, "FAULT"
-
-class ShutterStates(Enum):
-    """Shutter states definitions."""
-
-    OPEN = HardwareObjectState.READY
-    CLOSED = HardwareObjectState.READY
-    MOVING = HardwareObjectState.BUSY
-    DISABLED = HardwareObjectState.WARNING
-    AUTOMATIC = HardwareObjectState.READY
-    UNKNOWN = HardwareObjectState.UNKNOWN
 
 
 class BlissShutter(AbstractShutter):
     """BLISS implementation of AbstractShutter """
 
     SPECIFIC_STATES = BlissShutterStates
-    VALUES = ShutterStates
 
     def __init__(self, name):
         AbstractShutter.__init__(self, name)
@@ -88,6 +77,15 @@ class BlissShutter(AbstractShutter):
         except AttributeError:
             # there is no frontend property
             pass
+        if self.shutter_type == "tango":
+            self._initialise_values()
+
+    def _initialise_values(self):
+         """ Add the tango states to VALUES"""
+         values_dict = {item.name: item.value for item in self.VALUES}
+         values_dict.update({"MOVING": "MOVING", "DISABLE": "DISABLE",
+                   "STANDBY": "STANDBY", "FAULT": "FAULT"})
+         self.VALUES = Enum("ValueEnum", values_dict)
 
     def get_state(self):
         """Get the device state.
@@ -106,13 +104,17 @@ class BlissShutter(AbstractShutter):
             (Enum): Enum member, corresponding to the value or UNKNOWN.
         """
         # the return from BLISS value is an Enum
-        _val = self._bliss_obj.state
+        _val = self._bliss_obj.state.name
         self._nominal_value = self.value_to_enum(_val)
         return self._nominal_value
 
     def _set_value(self, value):
         if value.name == "OPEN":
-            self._bliss_obj.open()
+            try:
+                self._bliss_obj.open()
+            except Exception as ex:
+                print(ex)
+
         elif value.name == "CLOSED":
             self._bliss_obj.close()
 
