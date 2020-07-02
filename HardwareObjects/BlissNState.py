@@ -25,7 +25,7 @@ Example xml file:
   <username>Detector Cover</username>
   <object_name>detcover</>
   <object href="/bliss" role="controller"/>
-  <values>{"IN": "in", "OUT": "out"}</values>
+  <values>{"IN": "IN", "OUT": "OUT"}</values>
 </device>
 """
 from enum import Enum
@@ -58,9 +58,10 @@ class BlissNState(AbstractNState):
         self._bliss_obj = getattr(self.getObjectByRole("controller"), _name)
 
         self.device_type = "actuator"
-        #if "MultiplePositions" in self._bliss_obj.__class__:
-        #    self.device_type = "motor"
+        if "MultiplePositions" in self._bliss_obj.__class__.__name__:
+            self.device_type = "motor"
 
+        self.initialise_values()
         if self.device_type == "actuator":
             self.connect(self._bliss_obj, "state", self.update_value)
             self.connect(self._bliss_obj, "state", self.update_state)
@@ -88,9 +89,9 @@ class BlissNState(AbstractNState):
         """
         if isinstance(value, Enum):
             self.__saved_state = value.name
-            try:
+            if isinstance(value.value, tuple) or isinstance(value.value, list):
                 value = value.value[0]
-            except TypeError:
+            else:
                 value = value.value
         else:
             self.__saved_state = value.upper()
