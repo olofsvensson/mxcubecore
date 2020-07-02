@@ -590,10 +590,9 @@ class ESRFMultiCollect(AbstractMultiCollect, HardwareObject):
             logging.getLogger("HWR").info("Waiting for end of motors motion")
             time.sleep(0.02)
 
-    @task
     def open_safety_shutter(self):
         try:
-            HWR.beamline.safety_shutter.set_value(HWR.beamline.safety_shutter.VALUES["OPEN"], timeout=None)        
+            HWR.beamline.safety_shutter.set_value(HWR.beamline.safety_shutter.VALUES.OPEN, timeout=10)        
             #while HWR.beamline.safety_shutter.get_state().name == "CLOSED":
             #    time.sleep(0.1)
         except RuntimeError:

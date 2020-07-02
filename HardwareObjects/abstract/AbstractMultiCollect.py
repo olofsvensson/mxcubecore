@@ -679,7 +679,7 @@ class AbstractMultiCollect(object):
         with cleanup(self.data_collection_cleanup):
             if not self.safety_shutter_opened():
                 logging.getLogger("user_level_log").info("Opening safety shutter")
-                self.open_safety_shutter(timeout=10)
+                self.open_safety_shutter()
 
             logging.getLogger("user_level_log").info("Preparing intensity monitors")
             self.prepare_intensity_monitors()
