@@ -228,9 +228,11 @@ class AbstractDetector(HardwareObject):
         """
         distance = distance or self._distance_motor_hwobj.get_value()
         beam_x, beam_y = self.get_beam_position(distance)
+        
         radius = min(
             self.get_width() - beam_x, self.get_height() - beam_y, beam_x, beam_y
         )
+        
         return radius
 
     def get_outer_radius(self, distance=None):
@@ -268,7 +270,7 @@ class AbstractDetector(HardwareObject):
         Returns:
             (int): detector height [px]
         """
-        return self._width
+        return self._height
 
     def set_threshold_energy(self, threshold_energy):
         """
