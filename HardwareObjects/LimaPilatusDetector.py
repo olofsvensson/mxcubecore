@@ -270,8 +270,8 @@ class LimaPilatusDetector(AbstractDetector):
         for i, start_angle in enumerate(self.start_angles):
             header = "\n%s\n" % self.getProperty("serial")
             header += "# %s\n" % time.strftime("%Y/%b/%d %T")
-            header += "# Pixel_size 172e-6 m x 172e-6 m\n"
-            header += "# Silicon sensor, thickness 0.000320 m\n"
+            header += "\n%s\n" % self.getProperty("sensor")
+            header += "\n%s\n" % self.getProperty("pixel_size")
             self.header["Start_angle"] = start_angle
 
             for key, value in self.header.items():
