@@ -51,7 +51,7 @@ def _poll_image(sleep_time, video_device, device_uri, video_mode, formats):
         except Exception as ex:
             print(ex)
         finally:
-            time.sleep(sleep_time)
+            time.sleep(sleep_time / 2)
 
 def start_video_stream(scale, _hash, fpath):
     """
