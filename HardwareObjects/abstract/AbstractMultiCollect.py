@@ -664,7 +664,7 @@ class AbstractMultiCollect(object):
             logging.getLogger("user_level_log").info(
                 "Setting resolution to %f", resolution
             )
-            # self.set_resolution(resolution)
+            HWR.beamline.resolution.set_value(resolution)
         elif "detector_distance" in oscillation_parameters:
             logging.getLogger("user_level_log").info(
                 "Moving detector to %f", data_collect_parameters["detector_distance"]

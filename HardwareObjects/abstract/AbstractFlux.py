@@ -93,5 +93,5 @@ class AbstractFlux(AbstractActuator):
         )
         return result
 
-    def re_emit_values(self):
-        self.emit("fluxValueChanged", self._value)
+#    def re_emit_values(self):
+#        self.emit("fluxValueChanged", self._value)
