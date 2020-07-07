@@ -47,16 +47,21 @@ class ESRFBeam(AbstractBeam):
     def init(self):
         """ Initialize hardware """
         AbstractBeam.init(self)
+        self._definer_type = self.getProperty("definer")
+
         self._aperture = self.getObjectByRole("aperture")
         _bliss_obj = self.getObjectByRole("bliss")
+
         _slits = self.getProperty("slits")
         if _slits:
             for name in _slits.split():
                 _key, _val = name.split(":")
                 self._slits.update({_key: _bliss_obj.__getattribute__(_val)})
+
         self._complex = self.getObjectByRole("complex")
-        self._definer_type = self.getProperty("definer")
+
         beam_position = self.getProperty("beam_position")
+
         if beam_position:
             self._beam_position_on_screen = tuple(map(float, beam_position.split()))
 
@@ -73,6 +78,7 @@ class ESRFBeam(AbstractBeam):
             (float, str): Size [mm], label.
         """
         _size = self._aperture.get_value().value[1]
+
         try:
             _label = self._aperture.get_value().value[1]
         except AttributeError:
@@ -120,7 +126,7 @@ class ESRFBeam(AbstractBeam):
 
         if self._slits:
             _beamsize_dict.update({"slits": self._get_slits_size().values()})
-
+ 
         # find which device has the minimum size
         try:
             _val = min(_beamsize_dict.values())
@@ -150,20 +156,21 @@ class ESRFBeam(AbstractBeam):
         _type = "enum"
         if self._definer_type in (self._aperture, "aperture"):
             # get list of the available apertures
-            aperture_list = self._aperture.predefined_positions
+            aperture_list = self._aperture.get_diameter_size_list()
             return {"type": [_type], "values": aperture_list}
 
         if self._definer_type in (self._complex, "complex"):
-            return {"type": [_type], "values": self._complex.size_list}
+            #return {"type": [_type], "values": self._complex.size_list}
+            return {"type": [_type], "values": self._complex.get_predefined_positions_list()}
 
         if self._definer_type in (self._slits, "slits"):
             # get the list of the slits motors range
             _low_w, _high_w = self._slits["width"].get_limits()
             _low_h, _high_h = self._slits["height"].get_limits()
-        return {
-            "type": ["range", "range"],
-            "values": [_low_w, _high_w, _low_h, _high_h],
-        }
+            return {
+                "type": ["range", "range"],
+                "values": [_low_w, _high_w, _low_h, _high_h],
+            }
 
         return None
 
@@ -192,16 +199,21 @@ class ESRFBeam(AbstractBeam):
         Args:
             size (str): The position name.
         """
-        self._aperture.set_value(int(size))
+        try:
+            _e = getattr(self._aperture.VALUES, "A" + size)
+        except AttributeError:
+            _e = getattr(self._aperture.VALUES, size)
+
+        self._aperture.set_value(_e)
 
     def _set_complex_size(self, size=None):
         """ Move the complex definer to the desired size.
         Args:
             size (str): The position name.
         """
-        self._complex.set_value(size)
+        self._complex.move_to_position(size)
 
-    def _set_value(self, size=None):
+    def set_value(self, size=None):
         """Set the beam size
         Args:
             size (list): Width, heigth or
@@ -210,7 +222,6 @@ class ESRFBeam(AbstractBeam):
             RuntimeError: Beam definer not configured
                           Size out of the limits.
         """
-
         if self._definer_type in (self._slits, "slits"):
             self._set_slits_size(size)
 
