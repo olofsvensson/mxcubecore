@@ -239,8 +239,7 @@ class LimaPilatusDetector(AbstractDetector):
 
     @task
     def set_detector_filenames(
-        self, frame_number, start, filename, jpeg_full_path, jpeg_thumbnail_full_path
-    ):
+        self, frame_number, start, filename):
         prefix, suffix = os.path.splitext(os.path.basename(filename))
         prefix = "_".join(prefix.split("_")[:-1]) + "_"
         dirname = os.path.dirname(filename)
@@ -248,6 +247,7 @@ class LimaPilatusDetector(AbstractDetector):
             dirname = dirname[len(os.path.sep) :]
 
         saving_directory = os.path.join(self.getProperty("buffer"), dirname)
+
         subprocess.Popen(
             "ssh %s@%s mkdir --parents %s"
             % (os.environ["USER"], self.getProperty("control"), saving_directory),
@@ -257,8 +257,6 @@ class LimaPilatusDetector(AbstractDetector):
             stderr=None,
             close_fds=True,
         ).wait()
-
-        self.wait_ready()
 
         self.set_channel_value("saving_directory", saving_directory)
         self.set_channel_value("saving_prefix", prefix)
@@ -276,11 +274,13 @@ class LimaPilatusDetector(AbstractDetector):
             header += "# Pixel_size 172e-6 m x 172e-6 m\n"
             header += "# Silicon sensor, thickness 0.000320 m\n"
             self.header["Start_angle"] = start_angle
+
             for key, value in self.header.items():
                 header += "# %s %s\n" % (key, value)
+                    
             headers.append("%d : array_data/header_contents|%s;" % (i, header))
 
-        self.execute_command("set_image_header", headers)
+        self.execute_command("set_image_header", headers)        
 
     def start_acquisition(self):
         try:
@@ -290,6 +290,7 @@ class LimaPilatusDetector(AbstractDetector):
 
         self.wait_ready()
 
+        self.execute_command("stop_acq")
         self.execute_command("prepare_acq")
         return self.execute_command("start_acq")
 
