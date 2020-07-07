@@ -646,15 +646,12 @@ class ESRFMultiCollect(AbstractMultiCollect, HardwareObject):
         
 
     @task
-    def set_detector_filenames(
-        self, frame_number, start, filename, jpeg_full_path, jpeg_thumbnail_full_path
-    ):
-        return self._detector.set_detector_filenames(
-            frame_number, start, filename, jpeg_full_path, jpeg_thumbnail_full_path
-        )
+    def set_detector_filenames(self, frame_number, start, filename):
+        if frame_number == 1:
+            return self._detector.set_detector_filenames(frame_number, start, filename)
 
     def stop_oscillation(self):
-        pass
+        HWR.beamline.diffractometer.abort_cmd()
 
     @task
     def start_acquisition(self, exptime, npass, first_frame, shutterless):
