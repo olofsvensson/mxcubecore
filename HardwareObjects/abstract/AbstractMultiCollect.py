@@ -811,8 +811,6 @@ class AbstractMultiCollect(object):
                             frame,
                             frame_start,
                             str(file_path),
-                            str(jpeg_full_path),
-                            str(jpeg_thumbnail_full_path),
                             wait=False
                         )
 
@@ -843,7 +841,6 @@ class AbstractMultiCollect(object):
                                 j == wedge_size
                             )
 
-                            # self.stop_acquisition()
                             self.write_image(j == 1)
 
                         # Store image in lims
@@ -928,7 +925,7 @@ class AbstractMultiCollect(object):
             # possibly download diagnostics) so we cannot trigger the cleanup (that will send an abort on the diffractometer) as soon as
             # the last frame is counted
             self.diffractometer().wait_ready(10)
-
+            
         # data collection done
         self.data_collection_end_hook(data_collect_parameters)
 
@@ -1120,7 +1117,6 @@ class AbstractMultiCollect(object):
             )
         return self.data_collect_task
 
-    # TODO: rename to stop_collect
     def stop_collect(self, owner=None):
         if self.data_collect_task is not None:
             self.data_collect_task.kill(block=False)
