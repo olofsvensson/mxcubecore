@@ -593,21 +593,25 @@ class ESRFMultiCollect(AbstractMultiCollect, HardwareObject):
     def open_safety_shutter(self):
         try:
             HWR.beamline.safety_shutter.set_value(HWR.beamline.safety_shutter.VALUES.OPEN, timeout=10)        
-            #while HWR.beamline.safety_shutter.get_state().name == "CLOSED":
-            #    time.sleep(0.1)
-        except RuntimeError:
+        except Exception:
             logging.getLogger("HWR").exception("")
 
     def safety_shutter_opened(self):
-        return HWR.beamline.safety_shutter.get_state().name == "OPENED"
+        state = False
+        
+        try:
+            state = HWR.beamline.safety_shutter.get_state().name == "OPENED"
+        except Exception:
+            logging.getLogger("HWR").exception("")
+            state = True
+
+        return state
 
     @task
     def close_safety_shutter(self):
         try:
             HWR.beamline.safety_shutter.set_value(HWR.beamline.safety_shutter.VALUES["CLOSE"])
-            #while HWR.beamline.safety_shutter.get_state().name == "OPENED":
-            #    time.sleep(0.1)
-        except RuntimeError:
+        except Exception:
             logging.getLogger("HWR").exception("")
 
     @task
