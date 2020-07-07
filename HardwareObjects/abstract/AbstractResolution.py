@@ -29,7 +29,7 @@ one set from the beamline configuration is used.
 
 import abc
 import logging
-from math import asin, atan, sin
+from math import asin, atan, sin, tan
 from HardwareRepository import HardwareRepository as HWR
 from HardwareRepository.HardwareObjects.abstract.AbstractMotor import AbstractMotor
 
@@ -145,9 +145,8 @@ class AbstractResolution(AbstractMotor):
         resolution = resolution or self._nominal_value
         _wavelength = HWR.beamline.energy.get_wavelength()
 
-        try:
-            ttheta = 2 * asin(_wavelength / (2 * resolution))
-            return self._hwr_detector.get_radius() / ttheta
+        try:           
+            return round(self._hwr_detector.get_radius() / (tan (2 * asin(_wavelength/(2 * resolution)))), 2)
         except (KeyError, ZeroDivisionError):
             return None
 
