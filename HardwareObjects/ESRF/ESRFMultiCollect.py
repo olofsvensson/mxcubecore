@@ -747,10 +747,10 @@ class ESRFMultiCollect(AbstractMultiCollect, HardwareObject):
         if r.status != 200:
             logging.error("Could not create hkl input file")
         else:
-            hkl_file.write(r.read())
+            hkl_file.write(r.read().decode())
         hkl_file.close()
         os.chmod(hkl_file_path, 0o666)
-
+        
         for input_file_dir, file_prefix in (
             (self.raw_data_input_file_dir, "../.."),
             (self.xds_directory, "../links"),
@@ -758,11 +758,11 @@ class ESRFMultiCollect(AbstractMultiCollect, HardwareObject):
             xds_input_file = os.path.join(input_file_dir, "XDS.INP")
             conn.request("GET", "/xds.inp/%d?basedir=%s" % (collection_id, file_prefix))
             xds_file = open(xds_input_file, "w")
-            r = conn.getresponse()
-            if r.status != 200:
+            res = conn.getresponse()
+            if res.status != 200:
                 logging.error("Could not create xds input file")
             else:
-                xds_file.write(r.read())
+                xds_file.write(res.read().decode())
             xds_file.close()
             os.chmod(xds_input_file, 0o666)
 
@@ -771,7 +771,7 @@ class ESRFMultiCollect(AbstractMultiCollect, HardwareObject):
         mosflm_input_file = os.path.join(input_file_dir, "mosflm.inp")
         conn.request("GET", "/mosflm.inp/%d?basedir=%s" % (collection_id, file_prefix))
         mosflm_file = open(mosflm_input_file, "w")
-        mosflm_file.write(conn.getresponse().read())
+        mosflm_file.write(conn.getresponse().read().decode())
         mosflm_file.close()
         os.chmod(mosflm_input_file, 0o666)
 
@@ -784,7 +784,7 @@ class ESRFMultiCollect(AbstractMultiCollect, HardwareObject):
             stac_om_input_file = os.path.join(stac_om_dir, stac_om_input_file_name)
             conn.request("GET", "/stac.descr/%d" % collection_id)
             stac_om_file = open(stac_om_input_file, "w")
-            stac_template = conn.getresponse().read()
+            stac_template = conn.getresponse().read().decode()
             if stac_om_input_file_name.startswith("xds"):
                 om_type = "xds"
                 if stac_om_dir == self.raw_data_input_file_dir:
