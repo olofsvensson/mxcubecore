@@ -69,6 +69,10 @@ class ESRFBeam(AbstractBeam):
             self._aperture.connect("valueChanged", self._emit_beam_info_change)
             self._aperture.connect("stateChanged", self._emit_beam_info_change)
 
+        if self._complex:
+            self._complex.connect("valueChanged", self._emit_beam_info_change)
+            self._complex.connect("stateChanged", self._emit_beam_info_change)
+
     def _emit_beam_info_change(self, *args, **kwargs):
         self.emit_beam_info_change()
 
@@ -91,7 +95,7 @@ class ESRFBeam(AbstractBeam):
         Returns:
             (float, str): Size [mm], label.
         """
-        _size = self._complex.get_value()
+        _size = self._complex.sizeByName[self._complex.get_current_position_name()]
         _name = self._complex.get_current_position_name()
         return _size, _name
 
@@ -105,6 +109,9 @@ class ESRFBeam(AbstractBeam):
             beam_size.update({_key: abs(_val.position)})
         return beam_size
 
+    def _beam_size_compare(self, s):
+        return s[0]
+    
     def get_value(self):
         """ Get the size (width and heigth) of the beam and its shape.
             The size is in mm.
@@ -113,6 +120,7 @@ class ESRFBeam(AbstractBeam):
                                (float, float, Enum, str)
         """        
         _shape = BeamShape.UNKNOWN
+        
         _beamsize_dict = {}
         if self._aperture:
             _size, _name = self._get_aperture_size()
@@ -121,15 +129,16 @@ class ESRFBeam(AbstractBeam):
 
         if self._complex:
             _size, _name = self._get_complex_size()
-            _beamsize_dict.update({_name: [_size]})
+            _beamsize_dict.update({_name: _size})
             _shape = BeamShape.ELIPTICAL
 
         if self._slits:
             _beamsize_dict.update({"slits": self._get_slits_size().values()})
- 
+            
         # find which device has the minimum size
         try:
-            _val = min(_beamsize_dict.values())
+            _val = min(_beamsize_dict.values(), key = self._beam_size_compare)
+            
             _key = [k for k, v in _beamsize_dict.items() if v == _val]
 
             _name = _key[0]
@@ -138,6 +147,8 @@ class ESRFBeam(AbstractBeam):
             if "slits" in _key:
                 self.beam_height = _val[1]
                 _shape = BeamShape.RECTANGULAR
+            elif len(_val) > 1:
+                self.beam_height = _val[1]
             else:
                 self.beam_height = _val[0]
         except ValueError:

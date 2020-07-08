@@ -1,3 +1,5 @@
+import ast
+
 from HardwareRepository.BaseHardwareObjects import HardwareObject
 from HardwareRepository.HardwareObjects.abstract.AbstractNState import AbstractNState
 from HardwareRepository.BaseHardwareObjects import HardwareObjectState
@@ -39,7 +41,7 @@ class ID232BeamDefiner(AbstractNState):
                 "tf1": ["IN" if x else "OUT" for x in map(int, tf1)],
                 "tf2": ["IN" if x else "OUT" for x in map(int, tf2)],
             }
-            self.sizeByName[name] = float(size)
+            self.sizeByName[name] = tuple([float(x) for x in ast.literal_eval(size)])
             self.coefByName[name] = float(coef)
 
     def is_ready(self):
@@ -59,8 +61,8 @@ class ID232BeamDefiner(AbstractNState):
 
     def _tf_state_updated(self, new_state=None):
         name = self.get_current_position_name()
-        self.emit("predefinedPositionChanged", (name, None))
-        self.emit("definerPosChanged", (name, (1e6, self.sizeByName.get(name, 1e6))))
+        self.emit("valueChanged", name)
+        self.emit("diameterIndexChanged", (name, (1e6, self.sizeByName.get(name, 1e6))))
 
     def connectNotify(self, signal):
         return self._tf_state_updated()
