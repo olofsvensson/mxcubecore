@@ -133,6 +133,5 @@ class HWObjActuatorCommand(CommandObject):
         value = "UNKNOWN"
 
         if hasattr(self._hwobj, "get_value"):
-            value = getattr(self._hwobj, "get_value")().name.lower()
-
+            value = getattr(self._hwobj, "get_value")().name
         return value
