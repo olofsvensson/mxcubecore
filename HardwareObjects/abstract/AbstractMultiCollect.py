@@ -137,8 +137,7 @@ class AbstractMultiCollect(object):
     @abc.abstractmethod
     @task
     def set_detector_filenames(
-        self, frame_number, start, filename, jpeg_full_path, jpeg_thumbnail_full_path
-    ):
+        self, frame_number, start, filename, shutterless):
         pass
 
     @abc.abstractmethod
@@ -811,6 +810,7 @@ class AbstractMultiCollect(object):
                             frame,
                             frame_start,
                             str(file_path),
+                            data_collect_parameters.get("shutterless", True),
                             wait=False
                         )
 
