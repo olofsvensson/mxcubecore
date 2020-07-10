@@ -168,6 +168,7 @@ class QueueManager(HardwareObject, QueueEntryContainer):
         try:
             # Procedure to be done before main implmentation
             # of task.
+            entry.status = QUEUE_ENTRY_STATUS.RUNNING
             entry.pre_execute()
             entry.execute()
 
