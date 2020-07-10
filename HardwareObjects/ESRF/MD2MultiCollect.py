@@ -92,7 +92,6 @@ class MD2MultiCollect(ESRFMultiCollect):
     def data_collection_cleanup(self):
         self.getObjectByRole("diffractometer")._wait_ready(10)
         self.close_fast_shutter()
-        self.getObjectByRole("controller").detcover.set_in(20)
 
     @task
     def oscil(self, start, end, exptime, npass, wait=True):
