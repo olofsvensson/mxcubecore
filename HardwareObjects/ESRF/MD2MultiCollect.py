@@ -68,7 +68,6 @@ class MD2MultiCollect(ESRFMultiCollect):
 
         HWR.beamline.diffractometer.take_snapshots(number_of_snapshots, wait=True)
 
-    @task
     def do_prepare_oscillation(self, *args, **kwargs):
         # set the detector cover out
         self.getObjectByRole("controller").detcover.set_out(20)
