@@ -277,10 +277,12 @@ class Sample(TaskNode):
         print(("sample: %s" % self.loc_str))
 
     def has_lims_data(self):
-        if self.lims_id > -1:
-            return True
-        else:
+        try:
+            if int(self.lims_id) > -1:
+                return True
+        except TypeError:
             return False
+        return False
 
     def get_name(self):
         return self._name
@@ -384,6 +386,7 @@ class Sample(TaskNode):
             self.lims_id = lims_sample.sampleId
         else:
             self.lims_id = lims_sample.get("sampleId")
+        print("---------------->",self.lims_id)
 
         if hasattr(lims_sample, "sampleName"):
             self.name = str(lims_sample.sampleName)
