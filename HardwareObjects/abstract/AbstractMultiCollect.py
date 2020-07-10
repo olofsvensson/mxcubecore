@@ -128,7 +128,6 @@ class AbstractMultiCollect(object):
         pass
 
     @abc.abstractmethod
-    @task
     def prepare_oscillation(
         self, start, osc_range, exptime, number_of_images, shutterless, npass
     ):
