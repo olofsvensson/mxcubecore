@@ -493,6 +493,7 @@ class AbstractMultiCollect(object):
         data_collect_parameters["actualCenteringPosition"] = positions_str.strip()
 
         self.move_motors(motors_to_move_before_collect)
+        HWR.beamline.diffractometer.save_centring_positions()
 
         # take snapshots, then assign centring status (which contains images) to
         # centring_info variable
@@ -673,7 +674,7 @@ class AbstractMultiCollect(object):
 
         # 0: software binned, 1: unbinned, 2:hw binned
         # self.set_detector_mode(data_collect_parameters["detector_mode"])
-
+        
         with cleanup(self.data_collection_cleanup):
             if not self.safety_shutter_opened():
                 logging.getLogger("user_level_log").info("Opening safety shutter")
@@ -688,7 +689,7 @@ class AbstractMultiCollect(object):
             npass = oscillation_parameters["number_of_passes"]
 
             # update LIMS
-            if HWR.beamline.lims:
+            if HWR.beamline.lims:               
                 try:
                     logging.getLogger("user_level_log").info(
                         "Gathering data for LIMS update"

@@ -370,11 +370,10 @@ def centre_plate(
 
 
 def ready(*motors):
-    print([(m.actuator_name, m.is_ready()) for m in motors])
     return all([m.is_ready() for m in motors])
 
 
-def move_motors(motor_positions_dict):
+def move_motors(motor_positions_dict):    
     def wait_ready(timeout=None):
         with gevent.Timeout(timeout):
             while not ready(*motor_positions_dict.keys()):
@@ -425,10 +424,8 @@ def center(
             except BaseException:
                 raise RuntimeError("Aborted while waiting for point selection")
             USER_CLICKED_EVENT = gevent.event.AsyncResult()
-            print("-------------------->", pixelsPerMm_Hor)
             X.append(x / float(pixelsPerMm_Hor))
             Y.append(y / float(pixelsPerMm_Ver))
-            print(phi.get_value())
             phi_positions.append(phi.direction * math.radians(phi.get_value()))
             if i != n_points - 1:
                 phi.set_value_relative(phi.direction * phi_angle)
@@ -485,7 +482,7 @@ def center(
     return centred_pos
 
 
-def end(centred_pos=None):
+def end(centred_pos=None):    
     if centred_pos is None:
         centred_pos = CURRENT_CENTRING.get()
     try:
@@ -538,7 +535,7 @@ def find_loop(camera, pixelsPerMm_Hor, chi_angle, msg_cb, new_point_cb):
     )
     camera.take_snapshot(snapshot_filename, bw=True)
 
-    info, x, y = lucid.find_loop(snapshot_filename, debug=True, IterationClosing=6)
+    info, x, y = lucid.find_loop(snapshot_filename, debug=False, IterationClosing=6)
 
     try:
         x = float(x)
@@ -633,8 +630,9 @@ def auto_center(
                 phi.set_value_relative(-i * 5)
             else:
                 user_click(x, y, wait=True)
-
+                
         centred_pos = centring_greenlet.get()
+        
         end(centred_pos)
 
     return centred_pos
