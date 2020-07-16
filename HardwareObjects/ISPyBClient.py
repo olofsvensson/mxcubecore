@@ -1696,7 +1696,7 @@ class ISPyBClient(HardwareObject):
                     "", manufacturer, model, mode
                 )
                 return res
-            except WebFault:
+            except WebFault as ex:
                 logging.getLogger("ispyb_client").exception(
                     "ISPyBClient: exception in find_detector"
                 )
@@ -2075,9 +2075,7 @@ class ISPyBValueFactory:
             detector_model = ""
 
         try:
-            modes = ("Software binned", "Unbinned", "Hardware binned")
-            det_mode = int(mx_collect_dict["detector_binning_mode"])
-            detector_mode = modes[det_mode]
+            detector_mode = det_mode = bl_config.detector_binning_mode
         except (KeyError, IndexError, ValueError, TypeError):
             detector_mode = ""
 
