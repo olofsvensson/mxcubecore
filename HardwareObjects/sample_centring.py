@@ -428,7 +428,7 @@ def center(
             Y.append(y / float(pixelsPerMm_Ver))
             phi_positions.append(phi.direction * math.radians(phi.get_value()))
             if i != n_points - 1:
-                phi.set_value_relative(phi.direction * phi_angle)
+                phi.set_value_relative(phi.direction * phi_angle, timeout=10)
             READY_FOR_NEXT_POINT.set()
             i += 1
     except BaseException:
@@ -535,7 +535,7 @@ def find_loop(camera, pixelsPerMm_Hor, chi_angle, msg_cb, new_point_cb):
     )
     camera.take_snapshot(snapshot_filename, bw=True)
 
-    info, x, y = lucid.find_loop(snapshot_filename, debug=False, IterationClosing=6)
+    info, x, y = lucid.find_loop(snapshot_filename, rotation=-90, debug=False, IterationClosing=6)
 
     try:
         x = float(x)
@@ -580,7 +580,7 @@ def auto_center(
                 msg_cb("No loop detected, aborting")
             return
 
-    for k in range(2):
+    for k in range(1):
         if callable(msg_cb):
             msg_cb("Doing automatic centring")
 
@@ -632,7 +632,6 @@ def auto_center(
                 user_click(x, y, wait=True)
                 
         centred_pos = centring_greenlet.get()
-        
         end(centred_pos)
 
     return centred_pos
