@@ -621,6 +621,7 @@ class MiniDiff(Equipment):
         self.emitCentringStarted(method)
 
         try:
+            self.wait_ready()
             fun = self.centringMethods[method]
         except KeyError as diag:
             logging.getLogger("HWR").error(
@@ -830,6 +831,8 @@ class MiniDiff(Equipment):
 
     def start_auto_centring(self, sample_info=None, loop_only=False):
         beam_pos_x, beam_pos_y = HWR.beamline.beam.get_beam_position_on_screen()
+
+        self.set_phase("centring", wait=True)
 
         self.current_centring_procedure = sample_centring.start_auto(
             HWR.beamline.sample_view.camera,
