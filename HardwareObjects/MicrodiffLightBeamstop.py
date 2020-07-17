@@ -44,29 +44,32 @@ class MicrodiffLightBeamstop(ExporterNState):
         """
         # move the beamstop backwords before setting the back light in
         if self._beamstop_obj:
-            self.handle_beamstop(value.name)
-
-        super(MicrodiffLightBeamstop, self)._set_value(value)
+            self.handle_beamstop(value)
+        else:
+            super(MicrodiffLightBeamstop, self)._set_value(value)
 
         # move the beamstop to the previous position after extracting
         # the back light
-        if self._beamstop_obj:
-            self.handle_beamstop(value.name)
+        #if self._beamstop_obj:
+        #    self.handle_beamstop(value.name)
 
     def handle_beamstop(self, value):
         """ Move the beamstop as function of the value of the back light.
         Args:
             (str): value name
-        """
-        if value == "IN":
+        """        
+        if value.name == "IN":
             _pos = self._beamstop_obj.get_value()
+
             # only move if the beamstop is closer than the sefety_position
             if _pos < self.safety_position:
                 self._saved_value = _pos
                 self._beamstop_obj.set_value(self.safety_position, timeout=60)
-        elif value == "OUT":
+
+            super(MicrodiffLightBeamstop, self)._set_value(value)
+
+        elif value.name == "OUT":
+            super(MicrodiffLightBeamstop, self)._set_value(value)
+
             if self._saved_value:
                 self._beamstop_obj.set_value(self._saved_value, timeout=60)
-        else:
-            # do nothing
-            pass
