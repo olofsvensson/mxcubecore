@@ -554,6 +554,7 @@ class ESRFMultiCollect(AbstractMultiCollect, HardwareObject):
     def data_collection_cleanup(self):
         try:
             self.stop_oscillation()
+            HWR.beamline.diffractometer.set_phase("Centring", wait=True, timeout=200)
         finally:
             self.close_fast_shutter()
 
