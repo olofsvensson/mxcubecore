@@ -445,6 +445,7 @@ class ESRFMultiCollect(AbstractMultiCollect, HardwareObject):
             detector_type=HWR.beamline.detector.getProperty("type"),
             detector_manufacturer=HWR.beamline.detector.getProperty("manufacturer"),
             detector_model=HWR.beamline.detector.getProperty("model"),
+            detector_binning_mode=HWR.beamline.detector.getProperty("binning_mode"),
             detector_px=HWR.beamline.detector.getProperty("px"),
             detector_py=HWR.beamline.detector.getProperty("py"),
             undulators=undulators,
