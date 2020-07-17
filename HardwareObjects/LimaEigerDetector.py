@@ -90,7 +90,6 @@ class LimaEigerDetector(AbstractDetector):
     def get_deadtime(self):
         return float(self.getProperty("deadtime"))
 
-    @task
     def prepare_acquisition(
         self,
         take_dark,
@@ -143,7 +142,7 @@ class LimaEigerDetector(AbstractDetector):
         self.header["Exposure_period"] = "%f s" % (exptime + self.get_deadtime())
         self.header["Exposure_time"] = "%f s" % exptime
 
-        beam_x, beam_y = HWR.beamline.detector.get_beam_centre()
+        beam_x, beam_y = HWR.beamline.detector.get_beam_position()
         header_info = [
             "beam_center_x=%s" % (beam_x / 7.5000003562308848e-02),
             "beam_center_y=%s" % (beam_y / 7.5000003562308848e-02),
@@ -190,9 +189,7 @@ class LimaEigerDetector(AbstractDetector):
             working_energy_chan.setValue(egy)
 
     @task
-    def set_detector_filenames(
-        self, frame_number, start, filename, jpeg_full_path, jpeg_thumbnail_full_path
-    ):
+    def set_detector_filenames(self, frame_number, start, filename):
         prefix, suffix = os.path.splitext(os.path.basename(filename))
         prefix = "_".join(prefix.split("_")[:-1]) + "_"
         dirname = os.path.dirname(filename)
@@ -212,17 +209,19 @@ class LimaEigerDetector(AbstractDetector):
         # self.get_channel_object("saving_index_format").setValue("%04d")
         self.get_channel_object("saving_format").setValue("HDF5")
 
-    @task
     def start_acquisition(self):
         logging.getLogger("user_level_log").info("Preparing acquisition")
         self.get_command_object("prepare_acq")()
         logging.getLogger("user_level_log").info("Detector ready, continuing")
         return self.get_command_object("start_acq")()
 
-    def stop(self):
+    def stop_acquisition(self):
         try:
             self.get_command_object("stop_acq")()
         except BaseException:
             pass
         time.sleep(1)
         self.get_command_object("reset")()
+
+    def reset(self):
+        self.stop_acquisition()
