@@ -33,6 +33,7 @@ emits signals:
 
 import abc
 import math
+import ast
 
 from HardwareRepository import HardwareRepository as HWR
 from HardwareRepository.BaseHardwareObjects import HardwareObject
@@ -78,6 +79,8 @@ class AbstractDetector(HardwareObject):
             self._distance_motor_hwobj = self.getObjectByRole("detector_distance")
         except KeyError:
             pass
+
+        self.roi_modes_list = ast.literal_eval(self.getProperty("roiModes", ""))
 
         self._pixel_size = (self.getProperty("px"), self.getProperty("py"))
         self._width = self.getProperty("width")
