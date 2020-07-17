@@ -42,6 +42,7 @@ BeamlineConfig = collections.namedtuple(
         "detector_fileext",
         "detector_type",
         "detector_manufacturer",
+        "detector_binning_mode",
         "detector_model",
         "detector_px",
         "detector_py",
@@ -63,7 +64,7 @@ class AbstractMultiCollect(object):
 
     def __init__(self):
         self.bl_control = BeamlineControl(*[None] * 14)
-        self.bl_config = BeamlineConfig(*[None] * 19)
+        self.bl_config = BeamlineConfig(*[None] * 20)
         self.data_collect_task = None
         self.oscillation_task = None
         self.oscillations_history = []
@@ -398,6 +399,7 @@ class AbstractMultiCollect(object):
 
             if detector_id:
                 data_collect_parameters["detector_id"] = detector_id
+
 
         # Creating the directory for images and processing information
         logging.getLogger("user_level_log").info(

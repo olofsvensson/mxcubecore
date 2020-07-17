@@ -85,7 +85,7 @@ class MD2MultiCollect(ESRFMultiCollect):
         # switch on the front light
         front_light_switch = diffr.getObjectByRole("FrontLightSwitch")
         front_light_switch.set_value(front_light_switch.VALUES.IN)
-        diffr.getObjectByRole("FrontLight").set_value(2)
+        #diffr.getObjectByRole("FrontLight").set_value(2)
 
     @task
     def data_collection_cleanup(self):
