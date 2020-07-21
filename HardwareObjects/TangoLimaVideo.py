@@ -36,7 +36,7 @@ def poll_image(lima_tango_device, video_mode, FORMATS):
     _, _, img_mode, frame_number, width, height, _, _, _, _ = struct.unpack(
         hfmt, img_data[1][:hsize]
     )
-
+    
     raw_data = img_data[1][hsize:]
     _from, _to = FORMATS.get(video_mode, (None, None))
 
@@ -60,7 +60,7 @@ class TangoLimaVideo(BaseHardwareObjects.Device):
         self.__gainExists = False
         self.__gammaExists = False
         self.__polling = None
-        self._video_mode = "RGB24"
+        self._video_mode = None
         self._last_image = (0, 0, 0)
 
         # Dictionary containing conversion information for a given
@@ -72,12 +72,14 @@ class TangoLimaVideo(BaseHardwareObjects.Device):
             "RGB8": ("L", "BMP"),
             "RGB24": ("RGB", "BMP"),
             "RGB32": ("RGBA", "BMP"),
+            "NO_CONVERSION": (None, None)
         }
 
     def init(self):
         self.device = None
 
         try:
+            self._video_mode = self.getProperty("video_mode", "RGB24")
             self.device = DeviceProxy(self.tangoname)
             # try a first call to get an exception if the device
             # is not exported
@@ -88,17 +90,22 @@ class TangoLimaVideo(BaseHardwareObjects.Device):
 
             self.device = BaseHardwareObjects.Null()
         else:
-            if self.device.video_live:
-                self.device.video_live = False
+            if self.getProperty("control_video", "True"):
+                logging.getLogger("HWR").info("MXCuBE controlling video")
 
-            self.device.video_mode = self._video_mode
+                if self.device.video_live:
+                    self.device.video_live = False
+
+                self.device.video_mode = self._video_mode
             
-            if self.getProperty("exposure_time"):
-                self.set_exposure(float(self.getProperty("exposure_time")))
-            else:
-                self.set_exposure(self.getProperty("interval") / 1000.0)
+                if self.getProperty("exposure_time"):
+                    self.set_exposure(float(self.getProperty("exposure_time")))
+                elif self.getProperty("interval"):
+                    self.set_exposure(self.getProperty("interval") / 1000.0)
 
-            self.device.video_live = True
+                self.device.video_live = True
+            else:
+                logging.getLogger("HWR").info("MXCuBE NOT controlling video")
 
         self.setIsReady(True)
 
