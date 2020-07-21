@@ -248,7 +248,6 @@ class ESRFEnergyScan(AbstractEnergyScan, HardwareObject):
         shutil.copy2(raw_scan_file, raw_arch_file)
         self.energy_scan_parameters["scanFileFullPath"] = raw_arch_file
 
-        print("pyyyyyyyyyyyyyyyyyyyyychooooooooooooooch")
         """
         result = PyChooch.calc(scan_data, elt, edge, efs_scan_file)
         # PyChooch occasionally returns an error and the result
@@ -264,12 +263,6 @@ class ESRFEnergyScan(AbstractEnergyScan, HardwareObject):
         chooch_graph_data = result[6]
         """
         # while waiting fro chooch to work...
-        # pk = 12.659
-        # ip = 12.658
-        # fpPeak = pk
-        # fppInfl = ip
-        # fpInfl = ip
-        ## efs_raw_file = raw_scan_file.replace(".raw", ".efs")
         subprocess.call(["/opt/pxsoft/bin/chooch",  "-e", elt, "-a", edge, "-o", efs_scan_file, "-g", png_scan_file, raw_data_file])
         time.sleep(5)
         with open(efs_scan_file, "r") as f:
@@ -289,7 +282,7 @@ class ESRFEnergyScan(AbstractEnergyScan, HardwareObject):
         comm = ""
         th_edge = float(self.energy_scan_parameters["edgeEnergy"])
 
-        logging.getLogger("user_level_log").info(
+        logging.getLogger("HWR").info(
             "Chooch results: pk = %f, ip = %f, rm = %f, Theoretical edge: %f"
             % (pk, ip, rm, th_edge)
         )
@@ -311,7 +304,6 @@ class ESRFEnergyScan(AbstractEnergyScan, HardwareObject):
             pk = 0
             ip = 0
 
-        
         efs_arch_file = raw_arch_file.replace(".raw", ".efs")
         if os.path.isfile(efs_scan_file):
             shutil.copy2(efs_scan_file, efs_arch_file)
