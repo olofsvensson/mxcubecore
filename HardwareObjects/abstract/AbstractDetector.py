@@ -80,7 +80,7 @@ class AbstractDetector(HardwareObject):
         except KeyError:
             pass
 
-        self.roi_modes_list = ast.literal_eval(self.getProperty("roiModes", ""))
+        self.roi_modes_list = ast.literal_eval(self.getProperty("roiModes", "()"))
 
         self._pixel_size = (self.getProperty("px"), self.getProperty("py"))
         self._width = self.getProperty("width")
