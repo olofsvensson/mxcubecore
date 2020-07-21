@@ -372,7 +372,6 @@ class Microdiff(MiniDiff.MiniDiff):
         mesh_range,
         wait=False,
     ):
-        self.scan_start_angle.set_value(start)
         self.scan_detector_gate_pulse_enabled.set_value(True)
 
         # Adding the servo time to the readout time to avoid any
@@ -383,29 +382,12 @@ class Microdiff(MiniDiff.MiniDiff):
             dead_time * 1000 + servo_time
         )
 
-        # Prepositionning at the center of the grid
         self.move_motors(mesh_center.as_dict())
-        self.centringVertical.set_value_relative(
-            (mesh_range["vertical_range"]) / 2, timeout=None
-        )
-        self.centringPhiy.set_value_relative(
-            -(mesh_range["horizontal_range"]) / 2, timeout=None
-        )
-
-        # params = "%0.3f\t" % -mesh_range["horizontal_range"]
-        # params += "%0.3f\t" % mesh_range["vertical_range"]
-        # params += "%d\t" % mesh_num_lines
-        # params += "%d\t" % (mesh_total_nb_frames / mesh_num_lines)
-        # # # scan_params += "%d\t" % 1
-        # params += "%r\t" % True
-        # params += "%r\t" % True
-        # params += "%r" % True
-
         positions = self.get_positions()
 
         params = "%0.3f\t" % (end - start)
-        params += "%0.3f\t" % mesh_range["vertical_range"]
-        params += "%0.3f\t" % (-mesh_range["horizontal_range"])
+        params += "%0.3f\t" % -mesh_range["vertical_range"]
+        params += "%0.3f\t" % mesh_range["horizontal_range"]
         params += "%0.3f\t" % start
         params += "%0.3f\t" % positions["phiz"]
         params += "%0.3f\t" % positions["phiy"]
