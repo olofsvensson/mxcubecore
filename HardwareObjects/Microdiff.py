@@ -386,8 +386,8 @@ class Microdiff(MiniDiff.MiniDiff):
         positions = self.get_positions()
 
         params = "%0.3f\t" % (end - start)
-        params += "%0.3f\t" % -mesh_range["vertical_range"]
-        params += "%0.3f\t" % mesh_range["horizontal_range"]
+        params += "%0.3f\t" % -mesh_range["horizontal_range"]
+        params += "%0.3f\t" % mesh_range["vertical_range"]
         params += "%0.3f\t" % start
         params += "%0.3f\t" % positions["phiy"]
         params += "%0.3f\t" % positions["phiz"]
