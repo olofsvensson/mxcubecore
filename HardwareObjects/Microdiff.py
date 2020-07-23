@@ -389,8 +389,8 @@ class Microdiff(MiniDiff.MiniDiff):
         params += "%0.3f\t" % -mesh_range["vertical_range"]
         params += "%0.3f\t" % mesh_range["horizontal_range"]
         params += "%0.3f\t" % start
-        params += "%0.3f\t" % positions["phiz"]
         params += "%0.3f\t" % positions["phiy"]
+        params += "%0.3f\t" % positions["phiz"]
         params += "%0.3f\t" % positions["sampx"]
         params += "%0.3f\t" % positions["sampy"]
         params += "%d\t" % mesh_num_lines
