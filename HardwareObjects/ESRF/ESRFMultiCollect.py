@@ -645,10 +645,7 @@ class ESRFMultiCollect(AbstractMultiCollect, HardwareObject):
             comment,
             energy,
             trigger_mode,
-        )
-
-        self.open_fast_shutter()
-        
+        )        
 
     @task
     def set_detector_filenames(self, frame_number, start, filename, shutterless):
