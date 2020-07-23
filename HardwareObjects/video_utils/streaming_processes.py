@@ -60,7 +60,7 @@ def poll_image(encoder_input, device_uri):
         except Exception as ex:
             print(ex)
         finally:
-            time.sleep(sleep_time)
+            time.sleep(0.001)
 
 def start_video_stream(size, scale, _hash, video_mode):
     """
