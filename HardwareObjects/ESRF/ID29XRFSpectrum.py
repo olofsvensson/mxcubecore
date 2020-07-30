@@ -71,7 +71,7 @@ class ID29XRFSpectrum(XRFSpectrum):
     def _findAttenuation(self, ctime=5):
         return self.choose_attenuation(ctime)
 
-     def _get_cfgfile(self, energy):
+    def _get_cfgfile(self, energy):
         """Get the McaTheory config file. The file name is always *keV.cfg
         Args:
             energy(float): The cirrent energy [keV]
