@@ -73,7 +73,20 @@ class BlissNState(AbstractNState):
         self.update_state()
 
     def _update_state(self, state):
+        """Set the state to Ready, as bliss actuator has no state value.
+        """
         self.update_state(self.STATES.READY)
+
+    def _update_state_motor(self, state):
+        """Update the state with state value, coming from a bliss motor.
+        Args:
+            state (str): State value
+        """
+        try:
+            state = self.SPECIFIC_STATES.__members__[state.upper()].value[0]
+        except (AttributeError, KeyError):
+            state = self.STATES.UNKNOWN
+        self.update_state(state)
 
     def get_value(self):
         """Get the device value
@@ -96,7 +109,7 @@ class BlissNState(AbstractNState):
 
         if isinstance(value, Enum):
             self.__saved_state = value.name
-            if isinstance(value.value, tuple) or isinstance(value.value, list):
+            if isinstance(value.value, (tuple, list)):
                 value = value.value[0]
             else:
                 value = value.value
@@ -118,7 +131,7 @@ class BlissNState(AbstractNState):
             _state = self._bliss_obj.state.upper()
         except (AttributeError, KeyError):
             return self.STATES.UNKNOWN
-        
+
         if _state in ("IN", "OUT"):
             if self.__saved_state == _state:
                 _state = self.STATES.READY
@@ -130,13 +143,6 @@ class BlissNState(AbstractNState):
             except KeyError:
                 _state = self.STATES.__members__[_state]
         return _state
-
-    def _update_state_motor(self, state):
-        try:
-            state = self.SPECIFIC_STATES.__members__[state.upper()].value[0]
-        except (AttributeError, KeyError):
-            state = self.STATES.UNKNOWN
-        return self.update_state(state)
 
     def initialise_values(self):
         """Get the predefined valies. Create the VALUES Enum

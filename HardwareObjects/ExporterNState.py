@@ -30,7 +30,6 @@ Example xml file:
 """
 from enum import Enum
 from HardwareRepository.HardwareObjects.abstract.AbstractNState import AbstractNState
-from HardwareRepository.BaseHardwareObjects import HardwareObjectState
 from HardwareRepository.Command.Exporter import Exporter
 from HardwareRepository.Command.exporter.ExporterStates import ExporterStates
 
@@ -129,7 +128,7 @@ class ExporterNState(AbstractNState):
         self.update_state(self.STATES.BUSY)
 
         if isinstance(value, Enum):
-            if isinstance(value.value, tuple) or isinstance(value.value, list):
+            if isinstance(value.value, (tuple, list)):
                 value = value.value[0]
             else:
                 value = value.value
