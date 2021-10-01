@@ -199,6 +199,17 @@ class Beamline(ConfiguredObject):
     __content_roles.append("flux")
 
     @property
+    def cryo(self):
+        """Cryo Hardware object
+
+        Returns:
+            Optional[AbstractActuator]:
+        """
+        return self._objects.get("cryo")
+
+    __content_roles.append("cryo")    
+
+    @property
     def beam(self):
         """Beam Hardware object
 
