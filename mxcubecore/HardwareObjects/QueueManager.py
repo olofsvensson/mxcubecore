@@ -234,14 +234,15 @@ class QueueManager(HardwareObject, QueueEntryContainer):
                 except Exception:
                     pass
 
-        self._root_task.kill(block=False)
+        if self._root_task:
+            self._root_task.kill(block=False)
 
         # Reset the pause event, incase we were waiting.
         self.set_pause(False)
-        self.emit("queue_stopped", (None,))
-        self.emit("statusMessage", ("status", "", "Queue stopped"))
-        # self.emit('centringAllowed', (True, ))
         self._is_stopped = True
+        self._running = False
+        self.emit("statusMessage", ("status", "", "Queue stoped"))
+        self.emit("queue_stopped", (None,))
 
     def set_pause(self, state):
         """
@@ -370,7 +371,8 @@ class QueueManager(HardwareObject, QueueEntryContainer):
         :returns: None
         :rtype: NoneType
         """
-        self.__execute_entry(entry)
+        task = gevent.spawn(self.__execute_entry, entry)
+        task.link((lambda _t: self.stop()))
 
     def clear(self):
         """
