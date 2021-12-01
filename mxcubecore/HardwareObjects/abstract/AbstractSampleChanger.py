@@ -213,10 +213,10 @@ class SampleChanger(Container, Equipment):
     TASK_FINISHED_EVENT = "taskFinished"
     CONTENTS_UPDATED_EVENT = "contentsUpdated"
 
-    def __init__(self, type, scannable, *args, **kwargs):
-        super(SampleChanger, self).__init__(type, None, type, scannable)
+    def __init__(self, type_, scannable, *args, **kwargs):
+        super(SampleChanger, self).__init__(type_, None, type_, scannable)
         if len(args) == 0:
-            args = (type,)
+            args = (type_,)
         Equipment.__init__(self, *args, **kwargs)
         self.state = -1
         self.status = ""
@@ -801,23 +801,16 @@ class SampleChanger(Container, Equipment):
         self._trigger_loaded_sample_changed_event(None)
 
     def _set_loaded_sample(self, sample):
-        previous_loaded = None
-
-        for sm in self.get_sample_list():
-            if sm.is_loaded():
-                previous_loaded = sm
-                break
-
-        for sm in self.get_sample_list():
-            if sm != sample:
-                sm._set_loaded(False)
+        # This is a reversal. The new version did not register
+        # samples mounted from the SampleGrid as mounted
+        for s in self.get_sample_list():
+            if s != sample:
+                s._set_loaded(False)
             else:
-                if self.get_loaded_sample() == sm:
-                    sm._set_loaded(True)
+                if self.get_loaded_sample() != s:
+                    s._set_loaded(True)
 
-        if previous_loaded != self.get_loaded_sample():
-            self._trigger_loaded_sample_changed_event(sample)
-
+        self._trigger_loaded_sample_changed_event(sample)
 
     def _set_selected_sample(self, sample):
         cur = self.get_selected_sample()

@@ -54,7 +54,9 @@ class QueueManager(HardwareObject, QueueEntryContainer):
         :returns: None
         :rtype: NoneType
         """
-        QueueEntryContainer.enqueue(self, queue_entry)
+
+        queue_entry.set_queue_controller(self)
+        super(QueueManager, self).enqueue(queue_entry)
 
     def execute(self):
         """
@@ -158,7 +160,7 @@ class QueueManager(HardwareObject, QueueEntryContainer):
         self.set_current_entry(entry)
         self._current_queue_entries.append(entry)
 
-        logging.getLogger("queue_exec").info("Calling execute on: " + str(entry))
+        logging.getLogger("queue_exec").info("Executing: " + str(entry))
         # logging.getLogger('queue_exec').info('Using model: ' + str(entry.get_data_model()))
 
         if self.is_paused():
@@ -167,7 +169,6 @@ class QueueManager(HardwareObject, QueueEntryContainer):
 
         self.wait_for_pause_event()
 
-        failed = False
         try:
             # Procedure to be done before main implmentation
             # of task.
