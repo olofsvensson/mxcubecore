@@ -2,7 +2,6 @@ import logging
 
 from dispatcher import saferef
 import gevent
-import gevent.monkey
 from gevent import _threading
 
 from gevent.event import Event

@@ -23,7 +23,7 @@ import sys
 import gevent
 import gevent.lock
 
-from mxcubecore.HardwareRepository import original_socket as socket
+import socket
 
 __copyright__ = """ Copyright © 2019 by the MXCuBE collaboration """
 __license__ = "LGPLv3+"
@@ -119,6 +119,7 @@ class StandardClient:
             return
         if self.__sock is None:
             self.__create_socket()
+
         self.__sock.connect((self.server_ip, self.server_port))
         self._is_connected = True
         self.error = None
