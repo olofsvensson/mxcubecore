@@ -565,6 +565,61 @@ class SampleCentringQueueEntry(BaseQueueEntry):
         return "Sample centering"
 
 
+class XrayCentring2QueueEntry(BaseQueueEntry):
+    """
+    Entry for X-ray centring (2022 version)
+    """
+
+    def __init__(self, view=None, data_model=None):
+        BaseQueueEntry.__init__(self, view, data_model)
+
+    def execute(self):
+        BaseQueueEntry.execute(self)
+        HWR.beamline.xray_centring.execute()
+
+    def pre_execute(self):
+        """Pre-execute. Set to new motor position, if any"""
+        BaseQueueEntry.pre_execute(self)
+        logging.getLogger("user_level_log").info( "Starting Xray centring, please wait.")
+
+        data_model = self.get_data_model()
+
+        motor_positions = dict(
+            item for item in data_model.get_motor_positions().items()
+            if item[1] is not None
+        )
+        pos_dict = {}
+        for tag in ("kappa", "kappa_phi"):
+            if tag in motor_positions:
+                pos_dict[tag] = motor_positions.pop(tag)
+        if pos_dict:
+            # Some beamlines move centering motors while moving kappa, kappa_phi
+            # Hence we need to move kappa, kappa_phi first.
+            HWR.beamline.diffractometer.move_motors(pos_dict)
+        if motor_positions:
+            # Move the rest of the motors, if needed
+            HWR.beamline.diffractometer.move_motors(motor_positions)
+
+        HWR.beamline.xray_centring.pre_execute(self)
+
+    def post_execute(self):
+        """Post-execute. Store centring result in data model"""
+        BaseQueueEntry.post_execute(self)
+
+        # Create a centred position object of the current position
+        # and put it in the data model for future access.
+        pos_dict = HWR.beamline.diffractometer.get_positions()
+        cpos = queue_model_objects.CentredPosition(pos_dict)
+        self._data_model.set_centring_result(cpos)
+
+        logging.getLogger("user_level_log").info("Finishing Xray centring")
+
+        HWR.beamline.xray_centring.post_execute()
+
+    def get_type_str(self):
+        return "X-ray centring"
+
+
 class DataCollectionQueueEntry(BaseQueueEntry):
     """
     Defines the behaviour of a data collection.
@@ -1860,6 +1915,7 @@ MODEL_QUEUE_ENTRY_MAPPINGS = {
     queue_model_objects.Basket: BasketQueueEntry,
     queue_model_objects.TaskGroup: TaskGroupQueueEntry,
     queue_model_objects.Workflow: GenericWorkflowQueueEntry,
+    queue_model_objects.XrayCentring2: XrayCentring2QueueEntry,
     queue_model_objects.XrayCentering: XrayCenteringQueueEntry,
     queue_model_objects.GphlWorkflow: GphlQueueEntry.GphlWorkflowQueueEntry,
     queue_model_objects.XrayImaging: EMBLQueueEntry.XrayImagingQueueEntry,

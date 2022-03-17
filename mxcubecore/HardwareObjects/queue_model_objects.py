@@ -1252,6 +1252,52 @@ class XrayCentering(TaskNode):
         pass
 
 
+class XrayCentring2(TaskNode):
+    """X-ray centring (2022 version)
+
+    Contains all parameters necessary for X-ray centring
+    This object is passed to the QueueEntry and HardwareObject
+    Parameters not defined here must be set as defaults, somehow
+    (transmission, grid step, ...)
+    """
+
+    def __init__(self, name=None, motor_positions=None, grid_size=None):
+        """
+
+        :param name: (str) Task name - for queue display. Default to std. name
+        :param motor_positions: (dict) Motor positions for centring (default to current)
+        :param grid_size: (tuple) grid_size_x, grid_size_y (in mm)
+        """
+        TaskNode.__init__(self)
+        self._centring_result = None
+        self._motor_positions = motor_positions.copy() if motor_positions else {}
+        self._grid_size = tuple(grid_size) if grid_size else None
+
+        if name:
+            self.set_name(name)
+
+    def get_name(self):
+        return self._name
+
+    def get_motor_positions(self):
+        return self._motor_positions.copy()
+
+    def get_grid_size(self):
+        return self._grid_size
+
+    def get_centring_result(self):
+        return self._centring_result
+
+    def set_centring_result(self, value):
+        if value is None or isinstance(value, CentredPosition):
+            self._centring_result = value
+        else:
+            raise TypeError(
+                "SampleCentring.centringResult must be a CentredPosition"
+                " or None, was a %s" % value.__class__.__name__
+            )
+
+
 class SampleCentring(TaskNode):
     """Manual 3 click centering
 
