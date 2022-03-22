@@ -672,3 +672,12 @@ class XMLRPCServer(HardwareObject):
 
     def setToken(self, token):
         SecureXMLRpcRequestHandler.setReferenceToken(token)
+
+    def addXrayCentring(self, parent_node_id):
+
+        from mxcubecore.HardwareObjects import queue_model_objects as qmo
+        from mxcubecore.HardwareObjects import queue_entry as qe
+        xc_model = qmo.XrayCentring2()
+        xc_entry = qe.XrayCenteringQueueEntry(data_model=dc_model)
+
+        return xc_model, xc_entry
