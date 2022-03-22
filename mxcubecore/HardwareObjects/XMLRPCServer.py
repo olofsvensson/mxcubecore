@@ -678,6 +678,6 @@ class XMLRPCServer(HardwareObject):
         from mxcubecore.HardwareObjects import queue_model_objects as qmo
         from mxcubecore.HardwareObjects import queue_entry as qe
         xc_model = qmo.XrayCentring2()
-        xc_entry = qe.XrayCenteringQueueEntry(data_model=dc_model)
+        xc_entry = qe.XrayCenteringQueueEntry(data_model=xc_model)
 
         return xc_model, xc_entry
