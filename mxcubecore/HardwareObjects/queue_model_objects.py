@@ -1273,6 +1273,10 @@ class XrayCentring2(TaskNode):
         self._motor_positions = motor_positions.copy() if motor_positions else {}
         self._grid_size = tuple(grid_size) if grid_size else None
 
+        # I do nto now if you need a path template; if not remove this
+        # and the access to it in init_from_task_data
+        self.path_template = PathTemplate()
+
         if name:
             self.set_name(name)
 
@@ -1282,8 +1286,14 @@ class XrayCentring2(TaskNode):
     def get_motor_positions(self):
         return self._motor_positions.copy()
 
+    def set_motor_positions(self, value):
+        self._motor_positions = dict(value) if value else {}
+
     def get_grid_size(self):
         return self._grid_size
+
+    def set_grid_size(self, value):
+        self._grid_size = tuple(value) if value else None
 
     def get_centring_result(self):
         return self._centring_result
@@ -1296,6 +1306,76 @@ class XrayCentring2(TaskNode):
                 "SampleCentring.centringResult must be a CentredPosition"
                 " or None, was a %s" % value.__class__.__name__
             )
+
+    def init_from_task_data(self, sample_model, params):
+        """ Set parameters from task input dictionary.
+
+        sample_model is required as this may be called before the object is enqueued
+        params is a dictionary with structure determined by mxcube3 usage
+        """
+
+        # Set configured settings
+        # # NB settings is an internal attribute DO NOT MODIFY
+        # settings = HWR.beamline.gphl_workflow.settings
+        # self.auto_char_params = copy.deepcopy(settings.get("auto_char_params", {}))
+        # self.auto_char_params.update(params.pop("auto_char_params", {}))
+        # self.auto_acq_params = copy.deepcopy(settings.get("auto_acq_params", {}))
+        # self.auto_acq_params.update(params.pop("auto_acq_params", {}))
+
+        # Set path template
+        self.path_template.set_from_dict(params)
+        if params["prefix"]:
+            self.path_template.base_prefix = params["prefix"]
+        else:
+            self.path_template.base_prefix = HWR.beamline.session.get_default_prefix(
+                sample_model
+            )
+        self.path_template.num_files = 0
+        self.path_template.precision = "0" + str(
+            HWR.beamline.session["file_info"].get_property("precision", 4)
+        )
+        self.path_template.directory = os.path.join(
+            HWR.beamline.session.get_base_image_directory(), params.get("subdir", "")
+        )
+        self.path_template.process_directory = os.path.join(
+            HWR.beamline.session.get_base_process_directory(), params.get("subdir", ""),
+        )
+
+
+        # # First set some parameters from defaults
+        # default_parameters = HWR.beamline.get_default_acquisition_parameters()
+        # self.aimed_resolution = default_parameters.resolution
+        # self.exposure_time = default_parameters.exp_time
+        # self.image_width = default_parameters.osc_range
+        #
+        # # Set parameters from diffraction plan
+        # diffraction_plan = sample_model.diffraction_plan
+        # if diffraction_plan:
+        #     # It is not clear if diffraction_plan is a dict or an object,
+        #     # and if so which kind
+        #     if hasattr(diffraction_plan, "radiationSensitivity"):
+        #         radiation_sensitivity = diffraction_plan.radiationSensitivity
+        #     else:
+        #         radiation_sensitivity = diffraction_plan.get("radiationSensitivity")
+        #
+        #     if radiation_sensitivity:
+        #         self.relative_rad_sensitivity = radiation_sensitivity
+        #
+        #     if hasattr(diffraction_plan, "aimedResolution"):
+        #         resolution = diffraction_plan.aimedResolution
+        #     else:
+        #         resolution = diffraction_plan.get("aimedResolution")
+        #
+        #     if resolution:
+        #         self.aimed_resolution = resolution
+
+        # Set paramaters from params dict
+        if "name" in params:
+            self.set_name(params["name"])
+        if "motor_positions" in params:
+            self.set_motor_positions(params["motor_positions"])
+        if "grid_size" in params:
+            self.set_grid_size(params["grid_size"])
 
 
 class SampleCentring(TaskNode):
@@ -1909,7 +1989,7 @@ class GphlWorkflow(TaskNode):
 
         workflow_hwobj = HWR.beamline.gphl_workflow
 
-        # Workflow start attriutes
+        # Workflow start attributes
         self.path_template = PathTemplate()
         self._type = str()
         self.shape = str()
