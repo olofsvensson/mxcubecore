@@ -12,6 +12,8 @@ from mxcubecore.HardwareObjects.ESRF.ESRFMetadataManagerClient import MXCuBEMeta
 # NBNB nicoproc is not found
 from mxcubecore.utils import nicoproc
 
+import celery
+
 try:
     from httplib import HTTPConnection
 except Exception:
@@ -115,15 +117,15 @@ class ESRFMultiCollect(AbstractMultiCollect, HardwareObject):
     def data_collection_hook(self, data_collect_parameters):
         if self._metadataClient is None:
             self._metadataClient = MXCuBEMetadataClient(self)
-        self._metadataClient.start(data_collect_parameters)
+        # self._metadataClient.start(data_collect_parameters)
 
     @task
     def data_collection_end_hook(self, data_collect_parameters):
         if nicoproc.USE_NICOPROC:
              nicoproc.stop()
 
-        self._detector._emit_status()
-        self._metadataClient.end(data_collect_parameters)
+        # self._detector._emit_status()
+        # self._metadataClient.end(data_collect_parameters)
 
     def prepare_oscillation(
         self,
@@ -384,7 +386,8 @@ class ESRFMultiCollect(AbstractMultiCollect, HardwareObject):
     @task
     def write_input_files(self, collection_id):
         # assumes self.xds_directory and self.mosflm_directory are valid
-        conn = HTTPConnection(self.bl_config.input_files_server)
+        # conn = HTTPConnection(self.bl_config.input_files_server)
+        conn = HTTPConnection("ub1004.esrf.fr:5698")
 
         # hkl input files
         input_file_dir = self.raw_hkl2000_dir
@@ -427,39 +430,39 @@ class ESRFMultiCollect(AbstractMultiCollect, HardwareObject):
         os.chmod(mosflm_input_file, 0o666)
 
         # also write input file for STAC
-        for stac_om_input_file_name, stac_om_dir in (
-            ("xds.descr", self.xds_directory),
-            ("mosflm.descr", self.mosflm_raw_data_input_file_dir),
-            ("xds.descr", self.raw_data_input_file_dir),
-        ):
-            stac_om_input_file = os.path.join(stac_om_dir, stac_om_input_file_name)
-            conn.request("GET", "/stac.descr/%d" % collection_id)
-            stac_om_file = open(stac_om_input_file, "w")
-            stac_template = conn.getresponse().read().decode()
-            if stac_om_input_file_name.startswith("xds"):
-                om_type = "xds"
-                if stac_om_dir == self.raw_data_input_file_dir:
-                    om_filename = os.path.join(stac_om_dir, "CORRECT.LP")
-                else:
-                    om_filename = os.path.join(
-                        stac_om_dir, "xds_fastproc", "CORRECT.LP"
-                    )
-            else:
-                om_type = "mosflm"
-                om_filename = os.path.join(stac_om_dir, "bestfile.par")
+        # for stac_om_input_file_name, stac_om_dir in (
+        #     ("xds.descr", self.xds_directory),
+        #     ("mosflm.descr", self.mosflm_raw_data_input_file_dir),
+        #     ("xds.descr", self.raw_data_input_file_dir),
+        # ):
+        #     stac_om_input_file = os.path.join(stac_om_dir, stac_om_input_file_name)
+        #     conn.request("GET", "/stac.descr/%d" % collection_id)
+        #     stac_om_file = open(stac_om_input_file, "w")
+        #     stac_template = conn.getresponse().read().decode()
+        #     if stac_om_input_file_name.startswith("xds"):
+        #         om_type = "xds"
+        #         if stac_om_dir == self.raw_data_input_file_dir:
+        #             om_filename = os.path.join(stac_om_dir, "CORRECT.LP")
+        #         else:
+        #             om_filename = os.path.join(
+        #                 stac_om_dir, "xds_fastproc", "CORRECT.LP"
+        #             )
+        #     else:
+        #         om_type = "mosflm"
+        #         om_filename = os.path.join(stac_om_dir, "bestfile.par")
 
-            stac_om_file.write(
-                stac_template.format(
-                    omfilename=om_filename,
-                    omtype=om_type,
-                    phi=HWR.beamline.diffractometer.phiMotor.get_value(),
-                    sampx=HWR.beamline.diffractometer.sampleXMotor.get_value(),
-                    sampy=HWR.beamline.diffractometer.sampleYMotor.get_value(),
-                    phiy=HWR.beamline.diffractometer.phiyMotor.get_value(),
-                )
-            )
-            stac_om_file.close()
-            os.chmod(stac_om_input_file, 0o666)
+            # stac_om_file.write(
+            #     stac_template.format(
+            #         omfilename=om_filename,
+            #         omtype=om_type,
+            #         phi=HWR.beamline.diffractometer.phiMotor.get_value(),
+            #         sampx=HWR.beamline.diffractometer.sampleXMotor.get_value(),
+            #         sampy=HWR.beamline.diffractometer.sampleYMotor.get_value(),
+            #         phiy=HWR.beamline.diffractometer.phiyMotor.get_value(),
+            #     )
+            # )
+            # stac_om_file.close()
+            # os.chmod(stac_om_input_file, 0o666)
 
     def get_wavelength(self):
         return HWR.beamline.energy.get_wavelength()
@@ -603,25 +606,31 @@ class ESRFMultiCollect(AbstractMultiCollect, HardwareObject):
         except Exception:
             beamline = "unknown"
             proposal = "unknown"
-        host, port = self.get_property("bes_jpeg_hostport").split(":")
-        conn = HTTPConnection(host, int(port))
-
-        params = urlencode(
-            {
-                "image_path": filename,
-                "jpeg_path": jpeg_path,
-                "jpeg_thumbnail_path": jpeg_thumbnail_path,
-                "initiator": beamline,
-                "externalRef": proposal,
-                "reuseCase": "true",
-            }
+        future = celery.execute.send_task(
+            "__main__.createThumbnailsForPyarch",
+            args=(filename, jpeg_path, jpeg_thumbnail_path)
         )
-        conn.request(
-            "POST",
-            "/BES/bridge/rest/processes/CreateThumbnails/RUN?%s" % params,
-            headers={"Accept": "text/plain"},
-        )
-        conn.getresponse()
+        result = future.get(timeout=120)
+        print(result)
+        # host, port = self.get_property("bes_jpeg_hostport").split(":")
+        # conn = HTTPConnection(host, int(port))
+        #
+        # params = urlencode(
+        #     {
+        #         "image_path": filename,
+        #         "jpeg_path": jpeg_path,
+        #         "jpeg_thumbnail_path": jpeg_thumbnail_path,
+        #         "initiator": beamline,
+        #         "externalRef": proposal,
+        #         "reuseCase": "true",
+        #     }
+        # )
+        # conn.request(
+        #     "POST",
+        #     "/BES/bridge/rest/processes/CreateThumbnails/RUN?%s" % params,
+        #     headers={"Accept": "text/plain"},
+        # )
+        # conn.getresponse()
 
     """
     getOscillation

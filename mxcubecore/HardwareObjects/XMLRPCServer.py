@@ -72,7 +72,7 @@ class XMLRPCServer(HardwareObject):
         self.host = host
         self.port = self.get_property("port")
 
-        self.use_token = self.get_property("use_token", True)
+        self.use_token = self.get_property("use_token", False)
 
         try:
             self.open()

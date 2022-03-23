@@ -358,7 +358,8 @@ class AbstractMultiCollect(object):
         # creating image file template and jpegs files templates
         file_parameters = data_collect_parameters["fileinfo"]
 
-        file_parameters["suffix"] = self.bl_config.detector_fileext
+        # file_parameters["suffix"] = self.bl_config.detector_fileext
+        file_parameters["suffix"] = "cbf"
         image_file_template = (
             "%(prefix)s_%(run_number)s_%%04d.%(suffix)s" % file_parameters
         )
@@ -761,13 +762,13 @@ class AbstractMultiCollect(object):
                     data_collect_parameters["xBeam"] = beam_centre_x
                     data_collect_parameters["yBeam"] = beam_centre_y
 
-                    und = self.get_undulators_gaps()
-                    i = 1
-                    for jj in self.bl_config.undulators:
-                        key = jj.type
-                        if key in und:
-                            data_collect_parameters["undulatorGap%d" % (i)] = und[key]
-                            i += 1
+                    # und = self.get_undulators_gaps()
+                    # i = 1
+                    # for jj in self.bl_config.undulators:
+                    #     key = jj.type
+                    #     if key in und:
+                    #         data_collect_parameters["undulatorGap%d" % (i)] = und[key]
+                    #         i += 1
                     data_collect_parameters[
                         "resolutionAtCorner"
                     ] = self.get_resolution_at_corner()

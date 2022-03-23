@@ -1,5 +1,6 @@
 import os
 import copy
+import celery
 import logging
 import binascii
 import subprocess
@@ -72,9 +73,23 @@ class EDNACharacterisation(AbstractCharacterisation):
         msg = "Starting EDNA characterisation using xml file %s" % input_file
         logging.getLogger("queue_exec").info(msg)
 
-        args = (self.start_edna_command, input_file, results_file, process_directory)
-        subprocess.call("%s %s %s %s" % args, shell=True)
-
+        # args = (self.start_edna_command, input_file, results_file, process_directory)
+        # subprocess.call("%s %s %s %s" % args, shell=True)
+        logging.getLogger("queue_exec").info("@"*80)
+        logging.getLogger("queue_exec").info("@"*80)
+        logging.getLogger("queue_exec").info("@"*80)
+        logging.getLogger("queue_exec").info("Sending task")
+        future = celery.execute.send_task(
+            "__main__.characterisation",
+            args=(input_file, results_file, process_directory)
+        )
+        logging.getLogger("queue_exec").info("Task sent")
+        result = future.get(timeout=120)
+        logging.getLogger("queue_exec").info("Task done, result:")
+        logging.getLogger("queue_exec").info(result)
+        logging.getLogger("queue_exec").info("@"*80)
+        logging.getLogger("queue_exec").info("@"*80)
+        logging.getLogger("queue_exec").info("@"*80)
         self.result = None
         if os.path.exists(results_file):
             self.result = XSDataResultMXCuBE.parseFile(results_file)
@@ -225,11 +240,11 @@ class EDNACharacterisation(AbstractCharacterisation):
         path_str = os.path.join(
             path_template.directory, path_template.get_image_file_name()
         )
-
+        path_str = path_str.split(".")[0]+".cbf"
         for img_num in range(int(acquisition_parameters.num_images)):
             image_file = XSDataFile()
             path = XSDataString()
-            path.set_value(path_str % (img_num + 1))
+            path.setValue(path_str % (img_num + 1))
             image_file.setPath(path)
             data_set.addImageFile(image_file)
 

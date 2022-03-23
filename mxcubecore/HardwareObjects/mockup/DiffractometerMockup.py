@@ -335,8 +335,8 @@ class DiffractometerMockup(GenericDiffractometer):
             "endTime": curr_time,
         }
         motors = self.get_positions()
-        #motors["beam_x"] = 0.1
-        #motors["beam_y"] = 0.1
+        motors["beam_x"] = 0.1
+        motors["beam_y"] = 0.1
         self.last_centred_position[0] = coord_x
         self.last_centred_position[1] = coord_y
         self.centring_status["motors"] = motors
@@ -386,3 +386,28 @@ class DiffractometerMockup(GenericDiffractometer):
 
     def get_point_from_line(self, point_one, point_two, index, images_num):
         return point_one.as_dict()
+
+    def save_snapshot(self, filename):
+        snapshotReferenceDir = "/scisoft/pxsoft/data/WORKFLOW_TEST_DATA/id30a1/20150306/PROCESSED_DATA/AV16/AV16-ON-1860734-5/MXPressE_01/"
+        #        snapshotReferenceDir = "/scisoft/pxsoft/data/WORKFLOW_TEST_DATA/id30a1/snapshots/snapshots_sameimage_1"
+        #        snapshotReferenceDir = "/scisoft/pxsoft/data/WORKFLOW_TEST_DATA/id30b/snapshots/snapshots_20180503-104037_pMpOuP"
+        phi = self.phiMotor.getPosition()
+        phiy = self.phiyMotor.getPosition()
+        if "background" in filename:
+            snapShotFileName = "snapshot_background.png"
+        else:
+            snapShotFileName = "snapshot_{0:03d}.png".format(int(phi/30)*30)
+        snapShotFilePath = os.path.join(snapshotReferenceDir, snapShotFileName)
+        fileDirectory = os.path.dirname(filename)
+        if fileDirectory.startswith("/data/pyarch"):
+            if not os.path.exists(fileDirectory):
+                sts = subprocess.Popen("ssh mxhpc2-1705 'mkdir -p {0}'".format(fileDirectory) , shell=True).wait()
+            sts = subprocess.Popen("ssh mxhpc2-1705 'cp {0} {1}'".format(snapShotFilePath, filename) , shell=True).wait()
+        else:
+            if not os.path.exists(fileDirectory):
+                os.makedirs(fileDirectory)
+            shutil.copyfile(snapShotFilePath, filename)
+
+    def saveCurrentPos(self):
+        self.centringStatus["motors"] = self.get_positions()
+        self.accept_centring()

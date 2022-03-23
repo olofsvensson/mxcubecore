@@ -67,4 +67,5 @@ class MicrodiffApertureMockup(Device):
             self.predefined_position_attr = self.predefinedPositions[positionName]
             return True
         except Exception:
+            raise
             return False
