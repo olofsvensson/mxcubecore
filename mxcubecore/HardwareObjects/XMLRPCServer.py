@@ -150,6 +150,7 @@ class XMLRPCServer(HardwareObject):
         self._server.register_function(self.set_back_light_level)
         self._server.register_function(self.get_back_light_level)
         self._server.register_function(self.centre_beam)
+        self._server.register_function(self.addXrayCentring)
 
         # Register functions from modules specified in <apis> element
         if self.has_object("apis"):
@@ -673,11 +674,14 @@ class XMLRPCServer(HardwareObject):
     def setToken(self, token):
         SecureXMLRpcRequestHandler.setReferenceToken(token)
 
-    def addXrayCentring(self, parent_node_id):
+    def addXrayCentring(self, parent_id):
 
         from mxcubecore.HardwareObjects import queue_model_objects as qmo
         from mxcubecore.HardwareObjects import queue_entry as qe
         xc_model = qmo.XrayCentring2()
-        xc_entry = qe.XrayCenteringQueueEntry(data_model=xc_model)
+        # xc_model.set_name("Small X-ray centring")
+        xc_entry = qe.XrayCenteringQueueEntry2(data_model=xc_model)
+        node_id = HWR.beamline.queue_model.add_child_at_id(parent_id, xc_entry)
+        self.queue_execute_entry_with_id(node_id)
 
-        return xc_model, xc_entry
+        return node_id

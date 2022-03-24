@@ -18,6 +18,8 @@
 """
 """
 
+import logging
+
 from __future__ import division, absolute_import
 from __future__ import print_function, unicode_literals
 
@@ -78,6 +80,13 @@ class XrayCentring2(HardwareObjectYaml):
         # As example - how to get hold of queue and data model:
         self._queue_entry = queue_entry
         data_model = queue_entry.get_data_model()
+        logging.getLogger("HWR").info("$"*80)
+        logging.getLogger("HWR").info("$"*80)
+        logging.getLogger("HWR").info("$"*80)
+        logging.getLogger("HWR").info("Starting execution of XrayCentring2")
+        logging.getLogger("HWR").info("$"*80)
+        logging.getLogger("HWR").info("$"*80)
+        logging.getLogger("HWR").info("$"*80)
 
         pass
 

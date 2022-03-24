@@ -1672,6 +1672,26 @@ class XrayCenteringQueueEntry(BaseQueueEntry):
             self.status = self.mesh_qe
         BaseQueueEntry.post_execute(self)
 
+class XrayCenteringQueueEntry2(BaseQueueEntry):
+    """
+    Defines the behaviour of an Advanced scan
+    """
+
+    def __init__(self, view=None, data_model=None, view_set_queue_entry=True):
+
+        BaseQueueEntry.__init__(self, view, data_model, view_set_queue_entry)
+        self._name = ""
+
+    def execute(self):
+        BaseQueueEntry.execute(self)
+
+    def _set_name(self, name=""):
+        self._name = name
+
+    def get_origin(self):
+        return None
+
+
 
 class AdvancedConnectorQueueEntry(BaseQueueEntry):
     """Controls different steps
@@ -1915,8 +1935,8 @@ MODEL_QUEUE_ENTRY_MAPPINGS = {
     queue_model_objects.Basket: BasketQueueEntry,
     queue_model_objects.TaskGroup: TaskGroupQueueEntry,
     queue_model_objects.Workflow: GenericWorkflowQueueEntry,
-    queue_model_objects.XrayCentring2: XrayCentring2QueueEntry,
     queue_model_objects.XrayCentering: XrayCenteringQueueEntry,
+    queue_model_objects.XrayCentring2: XrayCenteringQueueEntry2,
     queue_model_objects.GphlWorkflow: GphlQueueEntry.GphlWorkflowQueueEntry,
     queue_model_objects.XrayImaging: EMBLQueueEntry.XrayImagingQueueEntry,
 }
