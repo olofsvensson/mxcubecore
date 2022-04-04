@@ -269,7 +269,7 @@ class AbstractMultiCollect(object):
     def create_directories(self, *args):
         for directory in args:
             try:
-                os.makedirs(directory)
+                os.makedirs(directory, exist_ok=True)
             except os.error as e:
                 if e.errno != errno.EEXIST:
                     raise
