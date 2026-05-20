@@ -1468,6 +1468,34 @@ class PathTemplate(object):
         PathTemplate.archive_folder = archive_folder
 
     @staticmethod
+    def get_archive_folder_mode(directory):
+        """Return configured mode for paths under the archive base, or None."""
+        mode = getattr(PathTemplate, "archive_folder_mode", None)
+        if mode is None:
+            return None
+        archive_base = PathTemplate.archive_base_directory
+        if not archive_base or not directory:
+            return None
+        abs_dir = os.path.abspath(directory)
+        abs_base = os.path.abspath(archive_base)
+        if abs_dir == abs_base or abs_dir.startswith(abs_base + os.sep):
+            return mode
+        return None
+
+    @staticmethod
+    def makedirs_archive(directory):
+        """Create a directory under the archive tree with configured permissions."""
+        mode = PathTemplate.get_archive_folder_mode(directory)
+        if mode is None:
+            os.makedirs(directory, exist_ok=True)
+            return
+        oldmask = os.umask(0)
+        try:
+            os.makedirs(directory, mode=mode, exist_ok=True)
+        finally:
+            os.umask(oldmask)
+
+    @staticmethod
     def set_path_template_style(synchrotron_name, template=None):
         PathTemplate.synchrotron_name = synchrotron_name
         PathTemplate.template = template

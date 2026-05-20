@@ -12,6 +12,7 @@ import gevent
 
 from mxcubecore import HardwareRepository as HWR
 from mxcubecore.TaskUtils import cleanup, error_cleanup, task
+from mxcubecore.model.queue_model_objects import PathTemplate
 
 BeamlineControl = collections.namedtuple(
     "BeamlineControl",
@@ -284,7 +285,10 @@ class AbstractMultiCollect(object):
     def create_directories(self, *args):
         for directory in args:
             try:
-                os.makedirs(directory)
+                if PathTemplate.get_archive_folder_mode(directory) is not None:
+                    PathTemplate.makedirs_archive(directory)
+                else:
+                    os.makedirs(directory)
             except os.error as e:
                 if e.errno != errno.EEXIST:
                     raise

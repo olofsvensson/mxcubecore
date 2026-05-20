@@ -49,6 +49,7 @@ from gevent import event, spawn
 
 from mxcubecore import HardwareRepository as HWR
 from mxcubecore.HardwareObjects.abstract.AbstractEnergyScan import AbstractEnergyScan
+from mxcubecore.model.queue_model_objects import PathTemplate
 
 
 class GetStaticParameters:
@@ -208,7 +209,7 @@ class ESRFEnergyScan(AbstractEnergyScan):
         png_arch_file = raw_arch_file.with_suffix(".png")
 
         if not Path(archive_directory).exists():
-            Path(archive_directory).mkdir(parents=True)
+            PathTemplate.makedirs_archive(archive_directory)
 
         try:
             with Path(raw_scan_file).open("w") as fp:

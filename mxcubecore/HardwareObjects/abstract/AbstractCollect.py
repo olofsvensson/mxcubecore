@@ -34,6 +34,7 @@ import gevent
 import gevent.event
 
 from mxcubecore import HardwareRepository as HWR
+from mxcubecore.model.queue_model_objects import PathTemplate
 from mxcubecore.BaseHardwareObjects import HardwareObject
 from mxcubecore.TaskUtils import task
 
@@ -567,8 +568,13 @@ class AbstractCollect(HardwareObject, object):
             args (list(str)): List of directories to create.
         """
         for directory in args:
+            if not directory:
+                continue
             try:
-                os.makedirs(directory)
+                if PathTemplate.get_archive_folder_mode(directory) is not None:
+                    PathTemplate.makedirs_archive(directory)
+                else:
+                    os.makedirs(directory)
             except os.error as e:
                 if e.errno != errno.EEXIST:
                     raise

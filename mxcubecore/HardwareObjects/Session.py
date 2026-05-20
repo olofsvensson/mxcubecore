@@ -104,6 +104,7 @@ class Session(HardwareObject):
         except ValueError:
             precision = self.default_precision
 
+        PathTemplate.archive_folder_mode = None
         PathTemplate.set_precision(precision)
         PathTemplate.set_path_template_style(
             self.synchrotron_name, file_info.get("file_template")

@@ -16,6 +16,7 @@ class ESRFSession(Session.Session):
     def init(self):
         Session.Session.init(self)
         self._use_acronym = self.get_property("use_acronym", True)
+        self._configure_archive_folder_mode()
 
         archive_base_directory = self["file_info"].get_property(
             "archive_base_directory"
@@ -27,6 +28,14 @@ class ESRFSession(Session.Session):
             queue_model_objects.PathTemplate.set_archive_path(
                 archive_base_directory, archive_folder
             )
+
+    def _configure_archive_folder_mode(self):
+        """Set archive directory mode from file_info (755 default, 775 if gw)."""
+        archive_folder_gw = self["file_info"].get_property("archive_folder_gw", False)
+        if str(archive_folder_gw).lower() == "true":
+            queue_model_objects.PathTemplate.archive_folder_mode = 0o775
+        else:
+            queue_model_objects.PathTemplate.archive_folder_mode = 0o755
 
     def set_endstation_name(self, name: str) -> None:
         name = name.lower().replace("-", "")
